@@ -1,0 +1,34 @@
+“listener.exe”(Win32): 已加载“E:\AndroidProject\jni\hellolua\Debug\listener.exe”。已加载符号。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\ntdll.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\kernel32.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\KernelBase.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\ws2_32.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\msvcrt.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\rpcrt4.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\sspicli.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\cryptbase.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\sechost.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\nsi.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\msvcp140d.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\vcruntime140d.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\ucrtbased.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\api-ms-win-core-localization-l1-2-0.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\api-ms-win-core-processthreads-l1-1-1.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\api-ms-win-core-file-l1-2-0.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\api-ms-win-core-timezone-l1-1-0.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\api-ms-win-core-file-l2-1-0.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\api-ms-win-core-synch-l1-2-0.dll”。无法查找或打开 PDB 文件。
+线程 0x2af0 已退出，返回值为 0 (0x0)。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\mswsock.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\user32.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\gdi32.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\lpk.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\usp10.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\advapi32.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\imm32.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\msctf.dll”。无法查找或打开 PDB 文件。
+“listener.exe”(Win32): 已加载“C:\Windows\SysWOW64\WSHTCPIP.DLL”。无法查找或打开 PDB 文件。
+线程 0x3110 已退出，返回值为 -1073741510 (0xc000013a)。
+线程 0x1b40 已退出，返回值为 -1073741510 (0xc000013a)。
+线程 0xfb8 已退出，返回值为 -1073741510 (0xc000013a)。
+程序“[0x14C8] listener.exe”已退出，返回值为 -1073741510 (0xc000013a)。

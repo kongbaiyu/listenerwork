@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.qianyou.listener5"
+    android:versionCode="1"
+    android:versionName="1.03" >
+
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="29" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+   	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.CAMERA"/>
+	<uses-permission android:name="android.permission.REORDER_TASKS" />
+    
+    <application
+        android:allowBackup="true"
+        android:usesCleartextTraffic="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.qianyou.listener5.MainActivity"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity android:name="com.qianyou.other.WangXinHongBao"></activity>
+        
+        <service
+	        android:name="com.qianyou.listener5.NLService"
+	        android:label="@string/app_name"
+	        android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+	        <intent-filter>
+	            <action android:name="android.service.notification.NotificationListenerService" />
+	        </intent-filter>
+	    </service>
+	    <meta-data
+            android:name="xposedmodule"
+            android:value="true"/>
+        <meta-data
+            android:name="xposeddescription"
+            android:value="铃铛管家"/>
+        <meta-data
+            android:name="xposedminversion"
+            android:value="54"/><!-- 对应的XposedBridge版本号 -->
+    </application>
+	
+</manifest>

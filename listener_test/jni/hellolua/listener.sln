@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.539
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "listener", "listener.vcxproj", "{008E6C6C-5161-4043-89B8-66933313ED51}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Debug|x64.ActiveCfg = Debug|x64
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Debug|x64.Build.0 = Debug|x64
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Debug|x86.ActiveCfg = Debug|Win32
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Debug|x86.Build.0 = Debug|Win32
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Release|x64.ActiveCfg = Release|x64
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Release|x64.Build.0 = Release|x64
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Release|x86.ActiveCfg = Release|Win32
+		{008E6C6C-5161-4043-89B8-66933313ED51}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {551FBD54-B2AB-4B69-B85A-84B1CD31DBF0}
+	EndGlobalSection
+EndGlobal

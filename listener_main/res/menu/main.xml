@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.qianyou.listener.MainActivity" >
+
+    
+    <item android:id="@+id/htgl" android:title="后台管理" android:orderInCategory="100"></item>
+    <item android:id="@+id/set" android:title="设置" android:orderInCategory="101"></item>
+    <item android:id="@+id/update" android:title="更新版本" android:orderInCategory="102"></item>
+    <item android:id="@+id/quit" android:title="退出" android:orderInCategory="103"></item>
+
+</menu>

@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.qianyou.listener.MainActivity" >
+
+    
+    <item android:id="@+id/htgl" android:title="后台管理" android:orderInCategory="100"></item>
+    <item android:id="@+id/set" android:title="设置" android:orderInCategory="101"></item>
+    <item android:id="@+id/wxhb" android:title="旺信红包" android:orderInCategory="102"></item>
+    <item android:id="@+id/gmcj" android:title="个码创建" android:orderInCategory="103"></item>
+    <item android:id="@+id/update" android:title="更新版本" android:orderInCategory="104"></item>
+
+</menu>
