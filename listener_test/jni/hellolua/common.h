@@ -24,6 +24,7 @@
 #define sendhtml ghyrtyer
 #define checkhtml ojiower
 #define mathhtml rqoinmlkwker
+#define getIpAddress asfgrthydxvz
 
 int setID(string id);
 int setEWM(string filename);
@@ -40,3 +41,4 @@ string mathhtml(string data);
 int sendhtml(string html);
 template<typename ... Args>
 string string_format(const std::string& format, Args ... args);
+int getIpAddress(string address);

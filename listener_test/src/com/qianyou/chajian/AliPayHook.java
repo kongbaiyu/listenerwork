@@ -16,6 +16,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import java.io.IOException;
@@ -39,13 +40,13 @@ import com.qianyou.listener5.MainActivity;
 
 
 public class AliPayHook implements IXposedHookLoadPackage{
-  public static String BACK_HOME_ACTION_USERID = "com.tools.payhelper.backhomeuserid";
+  public static String BACK_HOME_ACTION_USERID = "com.qianyou.wangxin.backhomeuserid";
   
-  public static String BILLRECEIVED_ACTION = "com.tools.payhelper.billreceived";
+  public static String BILLRECEIVED_ACTION = "com.qianyou.wangxin.billreceived";
   
-  public static String QRCODERECEIVED_ACTION = "com.tools.payhelper.qrcodereceived";
+  public static String QRCODERECEIVED_ACTION = "com.qianyou.wangxin.qrcodereceived";
   
-  public static String SAVEALIPAYCOOKIE_ACTION = "com.tools.payhelper.savealipaycookie";
+  public static String SAVEALIPAYCOOKIE_ACTION = "com.qianyou.wangxin.savealipaycookie";
   
   
   
@@ -55,7 +56,7 @@ public class AliPayHook implements IXposedHookLoadPackage{
 	      final String processName = paramLoadPackageParam.processName;
 	      if ("com.eg.android.AlipayGphone".equals(packageName))
 	          try {
-	        	  XposedHelpers.findAndHookMethod(XposedHelpers.findClass("com.alipay.apmobilesecuritysdk.scanattack.common.ScanAttack", paramLoadPackageParam.classLoader),"getScanAttackInfo", //getAD104
+	        	  XposedHelpers.findAndHookMethod(XposedHelpers.findClass("com.alipay.apmobilesecuritysdk.scanattack.common.ScanAttack", paramLoadPackageParam.classLoader),"getAD104", //getScanAttackInfo;getAD104
 	        			  Context.class, int.class, int.class, boolean.class, int.class, int.class, String.class, new XC_MethodHook() {
 		        		  @Override
 		                  protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -64,7 +65,7 @@ public class AliPayHook implements IXposedHookLoadPackage{
 		                      param.setResult(null);
 		                  }
 						});
-	            XposedHelpers.findAndHookMethod(Application.class, "attach", new Object[] { Context.class, new XC_MethodHook() {
+	        	  XposedHelpers.findAndHookMethod(Application.class, "attach", new Object[] { Context.class, new XC_MethodHook() {
 	                    protected void afterHookedMethod(XC_MethodHook.MethodHookParam param1MethodHookParam) throws Throwable {
 	                      super.afterHookedMethod(param1MethodHookParam);
 	                      Context context = (Context)param1MethodHookParam.args[0];
@@ -75,7 +76,7 @@ public class AliPayHook implements IXposedHookLoadPackage{
 //	                        IntentFilter intentFilter = new IntentFilter();
 //	                        intentFilter.addAction("com.payhelper.alipay.start");
 //	                        context.registerReceiver(startAlipayReceived, intentFilter);
-	                       // XposedBridge.log("handleLoadPackage: " + packageName);
+	                        XposedBridge.log("handleLoadPackage: " + packageName);
 	                        Toast.makeText(context, "绑定支付宝成功", 1).show();
 	                        JSONObject jo=new JSONObject();
 	                    	jo.put("action", 110);
@@ -85,6 +86,16 @@ public class AliPayHook implements IXposedHookLoadPackage{
 	                      } 
 	                    }
 	                  } });
+	            XposedHelpers.findAndHookMethod(Activity.class, "onCreate", Bundle.class, new XC_MethodHook() {
+	                protected void afterHookedMethod(MethodHookParam param1MethodHookParam) throws Throwable {
+	                    super.afterHookedMethod(param1MethodHookParam);
+	                    String str = param1MethodHookParam.thisObject.toString();
+	                    String stringBuilder = " 啊啊啊obj ==" +
+	                            str;
+	                    XposedBridge.log(stringBuilder);
+	                   
+	                }
+	            });
 	            return;
 	          } catch (Throwable throwable) {
 	            XposedBridge.log(throwable);
@@ -116,13 +127,13 @@ public class AliPayHook implements IXposedHookLoadPackage{
 			}).start();
 	    	  
 	      }
-	      if ("com.alibaba.mobileim".equals(packageName) && !MainActivity.instance.WANGXIN_ISHOOK)
+	      //旺信红包
+	      if ("com.alibaba.mobileim".equals(packageName))
 	          try {
 	            XposedHelpers.findAndHookMethod(Application.class, "attach", new Object[] { Context.class, new XC_MethodHook() {
 	                    protected void afterHookedMethod(XC_MethodHook.MethodHookParam param1MethodHookParam) throws Throwable {
 	                      super.afterHookedMethod(param1MethodHookParam);
 	                      Context context = (Context)param1MethodHookParam.thisObject;
-	                      MainActivity.instance.WANGXIN_ISHOOK=true;
 	                      XposedBridge.log("旺信hook成功");
                     	  JSONObject jo=new JSONObject();
                     	  jo.put("action", 112);
@@ -130,6 +141,19 @@ public class AliPayHook implements IXposedHookLoadPackage{
                     	  sendToMain(jo.toString(),false);
                           Toast.makeText(context, "绑定旺信宝成功b", 1).show();
 	                      new MobileImHook(context, paramLoadPackageParam.classLoader);
+	                    }
+	                  } });
+	            return;
+	          } catch (Throwable throwable) {} 
+	      //闲鱼转账
+	      if ("com.taobao.idlefish".equals(packageName))
+	          try {
+	            XposedHelpers.findAndHookMethod(Application.class, "attach", new Object[] { Context.class, new XC_MethodHook() {
+	                    protected void afterHookedMethod(XC_MethodHook.MethodHookParam param1MethodHookParam) throws Throwable {
+	                      super.afterHookedMethod(param1MethodHookParam);
+	                      Context context = (Context)param1MethodHookParam.thisObject;
+	                      XposedBridge.log("闲鱼hook成功");
+	                      xianyuHook(context, paramLoadPackageParam.classLoader);
 	                    }
 	                  } });
 	            return;
@@ -187,10 +211,10 @@ public class AliPayHook implements IXposedHookLoadPackage{
                 String str2 = (String)XposedHelpers.callMethod(param1MethodHookParam.args[0], "toString", new Object[0]);
                 //Log.i("8888Heart", "支付宝支付" + str2);
                 String str1 = getTextCenter(str2, "extraInfo='", "'");
-//                XposedBridge.log("*****************start2********************");
-//                XposedBridge.log("总消息="+str2);
-//                XposedBridge.log(str1);
-//                XposedBridge.log("*****************end2********************");
+                XposedBridge.log("*****************start2********************");
+                XposedBridge.log("总消息="+str2);
+                XposedBridge.log("str1==="+str1);
+                XposedBridge.log("*****************end2********************");
                 //Log.i("8888Heart", "进来了接受订单通知广播88" + str1);
                 if (str1.contains("二维码收款") || str1.contains("收到一笔转账") || str1.contains("收款金额")) {
                   //Log.i("8888Heart", "进来了接受订单通知广播44");
@@ -218,12 +242,12 @@ public class AliPayHook implements IXposedHookLoadPackage{
                 	jo.put("time",new Date().getTime());
                 	jo.put("payer", "个人收款");
                 	JSONArray content = new JSONArray(jo1.getString("content"));
-                	//XposedBridge.log("content"+content);
+                	XposedBridge.log("content"+content);
                 	for (int i = 0; i < content.length(); i++) {
 						JSONObject jo2 = (JSONObject)content.get(i);
-						//XposedBridge.log("jo2"+jo2);
+						XposedBridge.log("jo2"+jo2);
 						if(jo2.getString("title").contains("付款")){
-							//XposedBridge.log("content=="+jo2.getString("content"));
+							XposedBridge.log("content=="+jo2.getString("content"));
 							jo.put("payer", "付款方："+jo2.getString("content"));
 						}
 					}
@@ -246,9 +270,9 @@ public class AliPayHook implements IXposedHookLoadPackage{
                 //PayHelperUtils.sendmsg(context, "\"商家服务收款到账MessageInfo：\" + MessageInfo");
 //                Log.i("00000Heart", "商家服务收款到账MessageInfo：" + str1);
 //                Log.i("00000Heart", "商家服务收款到账content：" + str2);
-//                XposedBridge.log("*****************start1********************");
-//                XposedBridge.log("总消息"+str1);
-//                XposedBridge.log(str2);
+                XposedBridge.log("*****************start1********************");
+                XposedBridge.log("总消息"+str1);
+                XposedBridge.log("str2==="+str2);
                 if (str2.contains("二维码收款") || str2.contains("收到一笔转账") || str2.contains("收款金额")) {
                   //AliPayHook.tempCook = PayHelperUtils.getCookieStr(classLoader);
                   //Log.i("00000Heart", "商家服务收款到账");
@@ -257,15 +281,17 @@ public class AliPayHook implements IXposedHookLoadPackage{
                     //PayHelperUtils.sendmsg(context, "商家服务收款到账");
                     //PayHelperUtils.getTradeInfo(context, str1);
                 	JSONObject jo1=new JSONObject(str2);
-                	JSONObject bizMonitor=new JSONObject(jo1.getString("bizMonitor"));
+                	//JSONObject bizMonitor=new JSONObject(jo1.getString("bizMonitor"));
+                	XposedBridge.log("aaaaa=="+jo1.toString());
                 	JSONObject jo=new JSONObject();
                 	jo.put("action", 104);
                 	jo.put("money", jo1.get("mainAmount"));
-                	jo.put("id", bizMonitor.get("id"));
+                	jo.put("id", jo1.get("gmtValid"));
                 	jo.put("type", "alipay");
                 	jo.put("time",new Date().getTime());
                 	jo.put("payer", "商家收款");
-                    //XposedBridge.log("*****************end1********************");
+                	XposedBridge.log("jo=="+jo.toString());
+                    XposedBridge.log("*****************end1********************");
                 	sendToMain(jo.toString(),false);
                   //System.out.println("支付宝日志：商家收到支付结果 ");
                 } 
@@ -278,9 +304,6 @@ public class AliPayHook implements IXposedHookLoadPackage{
       
       XposedBridge.hookAllMethods(XposedHelpers.findClass("com.alipay.mobile.payee.ui.PayeeQRActivity", classLoader), "b", new XC_MethodHook() {
     	  protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-    		  //XposedBridge.log("啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊");
-    		  Object consultSetAmountRes = param.args[0];
-    		  String consultSetAmountResString = "";
     		  if (param.args[0]!=null) {
     			  String str1 = (String)XposedHelpers.callMethod(param.args[0], "toString", new Object[0]);
     			 // XposedBridge.log("aaaaaaaaa"+str1);
@@ -294,6 +317,42 @@ public class AliPayHook implements IXposedHookLoadPackage{
     		  super.afterHookedMethod(param);
     	  }
       });
+      
+//      XposedBridge.hookAllMethods(XposedHelpers.findClass("com.alipay.mobile.quinox.utils.TraceLogger", classLoader), "v", new XC_MethodHook() {
+//    	  protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//    		  XposedBridge.log("======================");
+//    		  XposedBridge.log("log1="+param.args[0]);
+//    		  XposedBridge.log("log2="+param.args[1]);
+//    		  super.afterHookedMethod(param);
+//    	  }
+//      });
+      
+	    XposedBridge.hookAllMethods(XposedHelpers.findClass("com.alibaba.health.pedometer.intergation.rpc.QueryRequestBuilder", classLoader), "print", new XC_MethodHook() {
+		  protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+			  XposedBridge.log("======================");
+			  XposedBridge.log("log1="+param.getResult());
+			  try {
+				  Object ob = param.getResult();
+				  XposedBridge.log("oooo="+ob);
+				  String str = (String)XposedHelpers.callMethod(ob, "toString", new Object[0]);
+				  XposedBridge.log("str="+str);
+//				  JSONObject jsonObject = new JSONObject(str);
+//				  XposedBridge.log(jsonObject.toString());
+				  String uidString = getTextCenter(str, "2088", ";");
+				  uidString = "2088"+uidString;
+				  XposedBridge.log("uuuuuuuuuuuuu="+uidString);
+				  //Toast.makeText(context, "获取支付宝UID成功", 1).show();
+	              JSONObject jo=new JSONObject();
+	          	  jo.put("action", 113);
+	          	  jo.put("msg",uidString);
+	          	  XposedBridge.log(jo.toString());
+	          	  sendToMain(jo.toString(),false);
+			  } catch (Exception e) {
+				// TODO: handle exception
+			  }
+			  super.afterHookedMethod(param);
+		  }
+	  });
       return;
     } catch (Error error) {
     
@@ -303,7 +362,28 @@ public class AliPayHook implements IXposedHookLoadPackage{
     
   }
 
-  
+  public void xianyuHook(final Context context ,final ClassLoader classLoader){
+		XposedBridge.hookAllMethods(XposedHelpers.findClass("com.taobao.fleamarket.business.transferMoney.view.TransferMoneyView", classLoader), "setPayInfo", new XC_MethodHook() {
+			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+				super.afterHookedMethod(param);
+				XposedBridge.log("--------setPayInfo--------------");
+				XposedBridge.log("setPayInfo："+param.args[0]);
+				Object o = param.args[0];
+				String sessionid = (String)XposedHelpers.getObjectField(o,"sessionId");
+				String businessId = (String)XposedHelpers.getObjectField(o,"businessId");
+				String payeeNick = (String)XposedHelpers.getObjectField(o,"payeeNick");
+				XposedBridge.log("sessionid =="+sessionid);
+				XposedBridge.log("businessId =="+businessId);
+				XposedBridge.log("payeeNick =="+payeeNick);
+				Intent intent = new Intent();
+            	intent.putExtra("sessionid", sessionid);
+            	intent.putExtra("businessId", businessId);
+            	intent.putExtra("payeeNick", payeeNick);
+            	intent.setAction("com.qianyou.xianyu.TransferMoneyModel");
+            	context.sendBroadcast(intent);
+          }
+      });
+  }
 
 	public static void startSvr()
     {

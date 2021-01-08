@@ -7,6 +7,7 @@
     <item android:id="@+id/set" android:title="设置" android:orderInCategory="101"></item>
     <item android:id="@+id/wxhb" android:title="旺信红包" android:orderInCategory="102"></item>
     <item android:id="@+id/gmcj" android:title="个码创建" android:orderInCategory="103"></item>
+    <item android:id="@+id/xqdcj" android:title="小钱袋创建" android:orderInCategory="103"></item>
     <item android:id="@+id/update" android:title="更新版本" android:orderInCategory="104"></item>
 
 </menu>

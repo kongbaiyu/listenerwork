@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,16 +17,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.qianyou.chajian.AliPayHook;
 import com.qianyou.jieping.Capture;
 import com.qianyou.jieping.Utils;
+import com.qianyou.jieping.Capture.CallBack;
 import com.qianyou.listener5.R;
 import com.qianyou.nat.Listener;
-import com.qianyou.other.CodeBean;
-import com.qianyou.other.CodeH5Bean;
-import com.qianyou.other.WangXinHongBao;
-
-import de.robv.android.xposed.XposedBridge;
+import com.qianyou.wangxin.CodeBean;
+import com.qianyou.wangxin.CodeH5Bean;
+import com.qianyou.wangxin.WangXinHongBao;
 
 import android.Manifest;
 import android.R.integer;
@@ -83,8 +80,6 @@ import android.webkit.WebViewClient;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -106,8 +101,7 @@ import android.widget.Toast;
 	public static Boolean isBDZFBoolean = false;
 	public static Boolean isGETQRCODEURL = false;
 	public static Boolean isBDWangXin = false;
-	public static Boolean BDWangXinACCOUNT = false;
-	public static Boolean WANGXIN_ISHOOK = false;
+	public static Boolean isGETZFBUID = false;
 	public ListView listView,listViewLog;
 	public Button button;
 	private View view_custom;
@@ -115,8 +109,6 @@ import android.widget.Toast;
     private AlertDialog alert = null;
     private AlertDialog.Builder builder = null;
     
-    public static String converstationid=null;
-    public static String wxaccount=null;
 	
 	public final static int OK=90;
 	public final static int EXIT=91;
@@ -136,8 +128,9 @@ import android.widget.Toast;
 	public final static int CHECKBDZHF=110;
 	public final static int GETQRCODEURL=111;
 	public final static int CHECKBDWANGXIN=112;
-	public final static int CHECKWANGXINACCOUNT=113;
-	public final static int GETCONVERSATIONID=114;
+	public final static int GETZFBUID=113;
+	
+	public final static int GETXIANYU=114;
 	
 	public final static int GETMSG = 555;
 	
@@ -173,8 +166,8 @@ import android.widget.Toast;
 	  private int breakIndex = 0;
 	  private int cur = 0;
 	  public String currentConId;
-	  private List<CodeBean> qrList = new ArrayList<CodeBean>();
-	  private int size = 5;
+	  public List<CodeBean> qrList = new ArrayList<CodeBean>();
+	  public int size = 1;
 	
 	
 	public List<String> logList=new ArrayList<String>();
@@ -446,17 +439,19 @@ import android.widget.Toast;
 		  mContext = MainActivity.this;
 		  this.billReceived = new BillReceived();
 	      IntentFilter intentFilter = new IntentFilter();
-	      intentFilter.addAction("com.tools.payhelper.billreceived");
-	      intentFilter.addAction("com.tools.payhelper.msgreceived");
-	      intentFilter.addAction("com.tools.payhelper.qrcodereceived");
-	      intentFilter.addAction("com.tools.payhelper.qrcodereceived.fail");
-	      intentFilter.addAction("com.tools.payhelper.tradenoreceived");
-	      intentFilter.addAction("com.tools.payhelper.current.conid");
-	      intentFilter.addAction("com.tools.payhelper.current.account");
-	      intentFilter.addAction("com.tools.payhelper.start.create");
-	      intentFilter.addAction("com.tools.payhelper.back.startapp");
-	      intentFilter.addAction("com.tools.payhelper.check.can.rob");
-	      intentFilter.addAction("com.tools.payhelper.to.h5.back");
+	      intentFilter.addAction("com.qianyou.wangxin.billreceived");
+	      intentFilter.addAction("com.qianyou.wangxin.msgreceived");
+	      intentFilter.addAction("com.qianyou.wangxin.qrcodereceived");
+	      intentFilter.addAction("com.qianyou.wangxin.qrcodereceived.fail");
+	      intentFilter.addAction("com.qianyou.wangxin.tradenoreceived");
+	      intentFilter.addAction("com.qianyou.wangxin.current.conid");
+	      intentFilter.addAction("com.qianyou.wangxin.current.account");
+	      intentFilter.addAction("com.qianyou.wangxin.start.create");
+	      intentFilter.addAction("com.qianyou.wangxin.back.startapp");
+	      intentFilter.addAction("com.qianyou.wangxin.check.can.rob");
+	      intentFilter.addAction("com.qianyou.wangxin.to.h5.back");
+	      intentFilter.addAction("com.qianyou.wangxin.uplist");
+	      intentFilter.addAction("com.qianyou.xianyu.TransferMoneyModel");
 	      registerReceiver(this.billReceived, intentFilter); 
 		  //final Button button2=(Button)findViewById(R.id.button2);
 		  listView=(ListView)findViewById(R.id.listView1);
@@ -467,11 +462,26 @@ import android.widget.Toast;
 		  
 		  SharedPreferences sp = getSharedPreferences("UserData",Activity.MODE_PRIVATE);//创建sp对象,如果有key为"SP_PEOPLE"的sp就取出
 		  tv=(TextView)findViewById(R.id.textView1);
+		  
+		 
+		  
+		  
 		  button.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
+					
+					Intent intent = new Intent("com.qianyou.wangxin.wangxin");
+					intent.putExtra("money", "1");
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append(System.currentTimeMillis());
+					stringBuilder.append("_");
+					stringBuilder.append(1);
+					intent.putExtra("orderid", stringBuilder.toString());
+					intent.putExtra("qunid", MainActivity.instance.currentConId);
+					intent.putExtra("type", "wangxin");
+					MainActivity.instance.sendBroadcast(intent);
 					
 					String sel = "";
 					String wx=msels.get("wx");
@@ -479,6 +489,10 @@ import android.widget.Toast;
 					String bank=msels.get("bank");
 					String fsj=msels.get("fsj");
 					String youzan=msels.get("youzan");
+					String xianyu_check=msels.get("xianyu_check");
+					String alipay_xqd=msels.get("alipay_xqd");
+					String alipay_scan=msels.get("alipay_scan");
+					String xianyu_trans=msels.get("xianyu_trans");
 					if(wx!=null&&!wx.equals(""))
 						sel=msels.get("wx");
 					if(alipay!=null&&!alipay.equals(""))
@@ -487,6 +501,20 @@ import android.widget.Toast;
 							sel=alipay;
 						else
 							sel=sel+","+alipay;
+					}
+					if(alipay_xqd!=null&&!alipay_xqd.equals(""))
+					{
+						if(sel.equals(""))
+							sel=alipay_xqd;
+						else
+							sel=sel+","+alipay_xqd;
+					}
+					if(alipay_scan!=null&&!alipay_scan.equals(""))
+					{
+						if(sel.equals(""))
+							sel=alipay_scan;
+						else
+							sel=sel+","+alipay_scan;
 					}
 					if(fsj!=null&&!fsj.equals(""))
 					{
@@ -502,7 +530,20 @@ import android.widget.Toast;
 						else
 							sel=sel+","+youzan;
 					}
-					
+					if(xianyu_check!=null&&!xianyu_check.equals(""))
+					{
+						if(sel.equals(""))
+							sel=xianyu_check;
+						else
+							sel=sel+","+xianyu_check;
+					}
+					if(xianyu_trans!=null&&!xianyu_trans.equals(""))
+					{
+						if(sel.equals(""))
+							sel=xianyu_trans;
+						else
+							sel=sel+","+xianyu_trans;
+					}
 					if(bank!=null&&!bank.equals(""))
 					{
 						if(sel.equals(""))
@@ -527,6 +568,10 @@ import android.widget.Toast;
 				            editor.putString("fsj", fsj) ;
 				            editor.putString("bank", bank) ; 
 				            editor.putString("youzan", youzan);
+				            editor.putString("xianyu_check", xianyu_check);
+				            editor.putString("alipay_xqd", alipay_xqd); 
+				            editor.putString("alipay_scan", alipay_scan); 
+				            editor.putString("xianyu_trans", xianyu_trans);
 				            editor.commit() ;//提交
 							String deviceid=sel;
 							
@@ -540,7 +585,14 @@ import android.widget.Toast;
 								Log.T("银行　："+bank);
 							if(youzan!=null&&!"".equals(youzan))
 								Log.T("有赞："+youzan);
-							
+							if(xianyu_check!=null&&!"".equals(xianyu_check))
+								Log.T("检测："+xianyu_check);
+							if(xianyu_trans!=null&&!"".equals(xianyu_trans))
+								Log.T("闲鱼："+xianyu_trans);
+							if(alipay_xqd!=null&&!"".equals(alipay_xqd))
+								Log.T("小钱袋："+alipay_xqd);
+							if(alipay_scan!=null&&!"".equals(alipay_scan))
+								Log.T("支付宝扫码："+alipay_scan);
 							if(listener.setID(deviceid)==1)
 							{
 								Listener.deviceid=deviceid;
@@ -611,6 +663,10 @@ import android.widget.Toast;
 						int fsjidx=t.indexOf("fsj:",7);
 						int bankidx=t.indexOf("bank:",7);
 						int youzanidx=t.indexOf("youzan:",7);
+						int xianyu_checkidx=t.indexOf("xianyu_check:",7);
+						int alipay_xqdidx=t.indexOf("alipay_xqd:",7);
+						int alipay_scanidx=t.indexOf("alipay_scan:",7);
+						int xianyu_transidx=t.indexOf("xianyu_trans:",7);
 						if(t.indexOf("-last-")!=-1)
 						{
 							wxidx=-1;
@@ -618,6 +674,10 @@ import android.widget.Toast;
 							fsjidx=-1;
 							bankidx=-1;
 							youzanidx=-1;
+							xianyu_checkidx=-1;
+							alipay_xqdidx=-1;
+							alipay_scanidx=-1;
+							xianyu_transidx=-1;
 						}
 						if(wxidx>0)
 						{
@@ -649,6 +709,38 @@ import android.widget.Toast;
 							}
 							
 						}
+						else if(alipay_xqdidx>0)
+						{
+							alipay_xqdidx+=10;
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, alipay_xqdidx+1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), alipay_xqdidx+1, alipay_xqdidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							int typeidx2=t.indexOf('\n',alipay_xqdidx+17);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(127,0,85)), alipay_xqdidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							String[] strArr=t.split("([0-9\\.]+)元.*");
+							int moneyIdx=strArr[0].length();
+							int yuanidx=t.indexOf("元",moneyIdx);
+							if(yuanidx!=-1)
+							{
+								ss.setSpan(new ForegroundColorSpan(Color.rgb(0,182,17)), moneyIdx, yuanidx, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							}
+							
+						}
+						else if(alipay_scanidx>0)
+						{
+							alipay_scanidx+=11;
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, alipay_scanidx+1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), alipay_scanidx+1, alipay_scanidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							int typeidx2=t.indexOf('\n',alipay_scanidx+17);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(127,0,85)), alipay_scanidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							String[] strArr=t.split("([0-9\\.]+)元.*");
+							int moneyIdx=strArr[0].length();
+							int yuanidx=t.indexOf("元",moneyIdx);
+							if(yuanidx!=-1)
+							{
+								ss.setSpan(new ForegroundColorSpan(Color.rgb(0,182,17)), moneyIdx, yuanidx, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							}
+							
+						}
 						else if(fsjidx>0)
 						{
 							fsjidx+=3;
@@ -671,6 +763,36 @@ import android.widget.Toast;
 							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), youzanidx+1, youzanidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 							int typeidx2=t.indexOf('\n',youzanidx+17);
 							ss.setSpan(new ForegroundColorSpan(Color.rgb(127,0,85)), youzanidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							String[] strArr=t.split("([0-9\\.]+)元.*");
+							int moneyIdx=strArr[0].length();
+							int yuanidx=t.indexOf("元",moneyIdx);
+							if(yuanidx!=-1)
+							{
+								ss.setSpan(new ForegroundColorSpan(Color.rgb(0,182,17)), moneyIdx, yuanidx, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							}
+						}
+						else if(xianyu_checkidx>0)
+						{
+							xianyu_checkidx+=12;
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, xianyu_checkidx+1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), xianyu_checkidx+1, xianyu_checkidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							int typeidx2=t.indexOf('\n',xianyu_checkidx+17);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(127,0,85)), xianyu_checkidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							String[] strArr=t.split("([0-9\\.]+)元.*");
+							int moneyIdx=strArr[0].length();
+							int yuanidx=t.indexOf("元",moneyIdx);
+							if(yuanidx!=-1)
+							{
+								ss.setSpan(new ForegroundColorSpan(Color.rgb(0,182,17)), moneyIdx, yuanidx, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							}
+						}
+						else if(xianyu_transidx>0)
+						{
+							xianyu_transidx+=12;
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, xianyu_transidx+1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), xianyu_transidx+1, xianyu_transidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+							int typeidx2=t.indexOf('\n',xianyu_transidx+17);
+							ss.setSpan(new ForegroundColorSpan(Color.rgb(127,0,85)),xianyu_transidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 							String[] strArr=t.split("([0-9\\.]+)元.*");
 							int moneyIdx=strArr[0].length();
 							int yuanidx=t.indexOf("元",moneyIdx);
@@ -735,16 +857,24 @@ import android.widget.Toast;
 		{
 			msels.put("wx", sp.getString("wx",null));
 			msels.put("alipay", sp.getString("alipay",null));
+			msels.put("alipay_xqd", sp.getString("alipay_xqd",null));
+			msels.put("alipay_scan", sp.getString("alipay_scan",null));
 			msels.put("fsj", sp.getString("fsj",null));
 			msels.put("bank", sp.getString("bank",null));
 			msels.put("youzan", sp.getString("youzan", null));
+			msels.put("xianyu_check", sp.getString("xianyu_check", null));
+			msels.put("xianyu_trans", sp.getString("xianyu_trans", null));
 			
 			String sel = "";
 			String wx=msels.get("wx");
 			String alipay=msels.get("alipay");
+			String alipay_xqd=msels.get("alipay_xqd");
+			String alipay_scan=msels.get("alipay_scan");
 			String fsj=msels.get("fsj");
 			String bank=msels.get("bank");
 			String youzan=msels.get("youzan");
+			String xianyu_check=msels.get("xianyu_check");
+			String xianyu_trans=msels.get("xianyu_trans");
 			if(wx!=null&&!wx.equals(""))
 				sel=msels.get("wx");
 			if(alipay!=null&&!alipay.equals(""))
@@ -753,6 +883,20 @@ import android.widget.Toast;
 					sel=alipay;
 				else
 					sel=sel+","+alipay;
+			}
+			if(alipay_xqd!=null&&!alipay_xqd.equals(""))
+			{
+				if(sel.equals(""))
+					sel=alipay_xqd;
+				else
+					sel=sel+","+alipay_xqd;
+			}
+			if(alipay_scan!=null&&!alipay_scan.equals(""))
+			{
+				if(sel.equals(""))
+					sel=alipay_scan;
+				else
+					sel=sel+","+alipay_scan;
 			}
 			if(fsj!=null&&!fsj.equals(""))
 			{
@@ -768,6 +912,21 @@ import android.widget.Toast;
 					sel=youzan;
 				else
 					sel=sel+","+youzan;
+			}
+
+			if(xianyu_check!=null&&!xianyu_check.equals(""))
+			{
+				if(sel.equals(""))
+					sel=xianyu_check;
+				else
+					sel=sel+","+xianyu_check;
+			}
+			if(xianyu_trans!=null&&!xianyu_trans.equals(""))
+			{
+				if(sel.equals(""))
+					sel=xianyu_trans;
+				else
+					sel=sel+","+xianyu_trans;
 			}
 			if(bank!=null&&!bank.equals(""))
 			{
@@ -785,12 +944,20 @@ import android.widget.Toast;
 				Log.T("微信　："+wx);
 			if(alipay!=null&&!"".equals(alipay))
 				Log.T("支付宝："+alipay);
+			if(alipay_xqd!=null&&!"".equals(alipay_xqd))
+				Log.T("小钱袋："+alipay_xqd);
+			if(alipay_scan!=null&&!"".equals(alipay_scan))
+				Log.T("支付宝扫码："+alipay_scan);
 			if(fsj!=null&&!"".equals(fsj))
 				Log.T("丰收家："+fsj);
 			if(bank!=null&&!"".equals(bank))
 				Log.T("银行　："+bank);
 			if(youzan!=null&&!"".equals(youzan))
 				Log.T("有赞　："+youzan);
+			if(xianyu_check!=null&&!"".equals(xianyu_check))
+				Log.T("检测　："+xianyu_check);
+			if(xianyu_trans!=null&&!"".equals(xianyu_trans))
+				Log.T("闲鱼　："+xianyu_trans);
 			
 			Log.T("自动接单"+deviceid);
 			if(listener.setID(deviceid)==1)
@@ -946,6 +1113,10 @@ import android.widget.Toast;
         if (id==R.id.gmcj) {
 			createCodeAccount();
 		}
+        if (id==R.id.xqdcj) {
+        	Intent intent = new Intent(MainActivity.this, CreateXQDAccount.class);
+			startActivity(intent);
+		}
         if (id == R.id.htgl) {
         	Intent intent= new Intent();
 			intent.setAction("android.intent.action.VIEW");
@@ -1013,7 +1184,7 @@ import android.widget.Toast;
 		        webView.setWebChromeClient(new MyChromeWebClient());
 		        //加载地址
 
-		        String url=MainActivity.instance.getResources().getString(R.string.server)+"user/Login/single_login?sign="+new String(ret);
+		        String url=MainActivity.instance.getResources().getString(R.string.server)+"web/store/#/singleLogin?sign="+new String(ret);
 		        webView.loadUrl(url);
 
 				//Uri content_url = Uri.parse("http://pay.qian178.com/user.php/Login/single_login?sign="+new String(ret));
@@ -1420,7 +1591,6 @@ import android.widget.Toast;
 	
 	//自动创建个码账户
 	public void createCodeAccount(){
-		mContext = MainActivity.this;
 		builder = new AlertDialog.Builder(mContext);
 		final LayoutInflater inflater = MainActivity.this.getLayoutInflater();
 		view_custom = inflater.inflate(R.layout.view_createqecode, null,false);
@@ -1428,15 +1598,20 @@ import android.widget.Toast;
 		builder.setCancelable(false);
 		alert = builder.create();
 		alert.show();
+		final EditText txt_account = view_custom.findViewById(R.id.editText_qr);
 		TextView txt_code = view_custom.findViewById(R.id.txt_qrcodeurl);
 		SharedPreferences sp = getSharedPreferences("UserData",Activity.MODE_PRIVATE);//创建sp对象,如果有key为"SP_PEOPLE"的sp就取出
-        String qrcodeurl = sp.getString("qrcodeurl","");  
+        final String qrcodeurl = sp.getString("qrcodeurl","");  
 		txt_code.setText(qrcodeurl);
 		
 		view_custom.findViewById(R.id.btn_commit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                alert.dismiss();
+            	if (txt_account.getText().toString().equals("") || qrcodeurl.equals("")) {
+					Toast.makeText(mContext, "请输入账户名", 0).show();
+				} else {
+					alert.dismiss();
+				}
             }
         });
 		
@@ -1453,7 +1628,7 @@ import android.widget.Toast;
 	    public void onReceive(Context param1Context, Intent param1Intent) {
 	      try {
 	        String str;
-	        if (param1Intent.getAction().contentEquals("com.tools.payhelper.billreceived")) {
+	        if (param1Intent.getAction().contentEquals("com.qianyou.wangxin.billreceived")) {
 	          String str2 = param1Intent.getStringExtra("bill_no");
 	          String str3 = param1Intent.getStringExtra("bill_money");
 	          String str4 = param1Intent.getStringExtra("bill_mark");
@@ -1475,11 +1650,14 @@ import android.widget.Toast;
 	          stringBuilder2.append("备注：");
 	          stringBuilder2.append(str4);
 	          Log.T(stringBuilder2.toString());
-	        } else if (param1Intent.getAction().contentEquals("com.tools.payhelper.qrcodereceived")) {
+	        } else if (param1Intent.getAction().contentEquals("com.qianyou.wangxin.qrcodereceived")) {
 	          String str4 = param1Intent.getStringExtra("money");
 	          String str1 = param1Intent.getStringExtra("mark");
 	          String str2 = param1Intent.getStringExtra("orderNo");
 	          String str3 = param1Intent.getStringExtra("type");
+	          String urlString = param1Intent.getStringExtra("url");
+	          urlString = "https:" + urlString +"%3D0";
+	          Log.T(urlString);
 	          str = param1Intent.getStringExtra("payurl");
 	          StringBuilder stringBuilder2 = new StringBuilder();
 	          stringBuilder2.append(System.currentTimeMillis());
@@ -1501,11 +1679,14 @@ import android.widget.Toast;
 	          codeBean.setPayUrl(str);
 	          codeBean.setMark(str1);
 	          MainActivity.this.qrList.add(codeBean);
-	          if (MainActivity.this.qrList.size() == MainActivity.this.size)
+	          //Log.T("chanma="+str);
+	          if (MainActivity.this.qrList.size() == MainActivity.this.size){
 	            Log.T("全部产码完毕。请点击上传数据按钮."); 
+              	WangXinHongBao.setWXLog("全部产码完毕。请点击上传数据按钮.");
+	          }
 	        } else {
 	          StringBuilder stringBuilder;
-	          if (param1Intent.getAction().contains("com.tools.payhelper.qrcodereceived.fail")) {
+	          if (param1Intent.getAction().contains("com.qianyou.wangxin.qrcodereceived.fail")) {
 	        	  param1Intent.getStringExtra("mark");
 	            String str1 = param1Intent.getStringExtra("msg");
 	            stringBuilder = new StringBuilder();
@@ -1515,10 +1696,15 @@ import android.widget.Toast;
 	            stringBuilder.append(MainActivity.this.qrList.size());
 	            stringBuilder.append("请点击上传数据按钮.");
 	            Log.T(stringBuilder.toString());
-	          } else if (param1Intent.getAction().contentEquals("com.tools.payhelper.msgreceived")) {
+                WangXinHongBao.setWXLog(stringBuilder.toString());
+	          } else if (param1Intent.getAction().contentEquals("com.qianyou.wangxin.msgreceived")) {
 	            Log.T(param1Intent.getStringExtra("msg"));
+	          } else if (param1Intent.getAction().contentEquals("com.qianyou.xianyu.TransferMoneyModel")) {
+	            Log.T("sessionid="+param1Intent.getStringExtra("sessionid"));
+	            Log.T("businessId="+param1Intent.getStringExtra("businessId"));
+	            Log.T("payeeNick="+param1Intent.getStringExtra("payeeNick"));
 	          } else {
-	            if (param1Intent.getAction().contentEquals("com.tools.payhelper.current.conid")) {
+	            if (param1Intent.getAction().contentEquals("com.qianyou.wangxin.current.conid")) {
 	              String str1 = param1Intent.getStringExtra("conId");
 	              MainActivity.this.currentConId = str1;
 	              if (!TextUtils.isEmpty(MainActivity.this.currentConId)) {
@@ -1528,15 +1714,14 @@ import android.widget.Toast;
 	                Log.T(stringBuilder1.toString());
 	              } 
 	            } else {
-	              if (!param1Intent.getAction().contentEquals("com.tools.payhelper.start.create"))
-	                if (param1Intent.getAction().contentEquals("com.tools.payhelper.current.account")) {
+	              if (!param1Intent.getAction().contentEquals("com.qianyou.wangxin.start.create"))
+	                if (param1Intent.getAction().contentEquals("com.qianyou.wangxin.current.account")) {
 	                  String str1 = param1Intent.getStringExtra("currentAc");
 	                  stringBuilder = new StringBuilder();
 	                  stringBuilder.append("当前账号：");
 	                  stringBuilder.append(str1);
 	                  Log.T(stringBuilder.toString());
-	                } else if (param1Intent.getAction().contentEquals("com.tools.payhelper.to.h5.back")) {
-	                    XposedBridge.log("收到转换完成MainActivity");
+	                } else if (param1Intent.getAction().contentEquals("com.qianyou.wangxin.to.h5.back")) {
 	                    String str1 = param1Intent.getStringExtra("money");
 	                    String str3 = param1Intent.getStringExtra("mark");
 	                    String str4 = param1Intent.getStringExtra("orderNo");
@@ -1555,7 +1740,6 @@ import android.widget.Toast;
 	                    StringBuilder stringBuilder1 = new StringBuilder();
 	                    stringBuilder1.append("转换完成,发送数据>>");
 	                    stringBuilder1.append(codeH5Bean);
-	                    XposedBridge.log(stringBuilder1.toString());
 	                  }  
 	              return;
 	            } 

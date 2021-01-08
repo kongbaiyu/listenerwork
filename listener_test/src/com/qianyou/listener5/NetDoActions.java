@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.icu.text.CaseMap.Title;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -45,6 +46,7 @@ public class NetDoActions {
 		try {
 			JSONObject jobject=new JSONObject((String) js);
 			int act=jobject.getInt("action");
+			//Log.T("js="+js);
 			if(act==MainActivity.GETDEVICE)
 			{
 				String data=jobject.getString("data");
@@ -122,6 +124,22 @@ public class NetDoActions {
 										cb.setChecked(true);
 									}
 								}
+								else if(type.equals("alipay_scan"))
+								{
+									qudao="支付宝扫码：";
+									if(name.equals(instance.msels.get("alipay_scan")))
+									{
+										cb.setChecked(true);
+									}
+								}
+								else if(type.equals("alipay_xqd"))
+								{
+									qudao="小钱袋：";
+									if(name.equals(instance.msels.get("alipay_xqd")))
+									{
+										cb.setChecked(true);
+									}
+								}
 								else if(type.equals("fsj"))
 								{
 									qudao="丰收家：";
@@ -138,10 +156,26 @@ public class NetDoActions {
 										cb.setChecked(true);
 									}
 								}
+								else if(type.equals("xianyu_trans"))
+								{
+									qudao="闲鱼：";
+									if(name.equals(instance.msels.get("xianyu_trans")))
+									{
+										cb.setChecked(true);
+									}
+								}
 								else if(type.equals("bank"))
 								{
 									qudao="银行　：";
 									if(name.equals(instance.msels.get("bank")))
+									{
+										cb.setChecked(true);
+									}
+								}
+								else if(type.equals("xianyu_check"))
+								{
+									qudao="检测　：";
+									if(name.equals(instance.msels.get("xianyu_check")))
 									{
 										cb.setChecked(true);
 									}
@@ -278,8 +312,9 @@ public class NetDoActions {
 				jo.put("act", "REXYPAY");
 				jo.put("ret", jobject.get("ret"));
 				jo.put("money", jobject.get("money"));
+				jo.put("title", jobject.get("title"));
 				instance.listener.sendJson(jo.toString(), "");
-				//Log.T(jo.toString());
+				Log.T(jo.toString());
 				String ret = jobject.getString("ret");
 				String alipayerror = jobject.getString("alipayerror");
 				//Log.T(ret);
@@ -367,6 +402,7 @@ public class NetDoActions {
 					}
 					if(type.equals("alipay")&&instance.isBDZFBoolean==false)
 					{
+						//Log.T("dddddd="+jobject.toString());
 						if(instance.listener.checkdx(data, title)==1)
 						{
 							Log.T(data);
@@ -466,6 +502,19 @@ public class NetDoActions {
 					instance.isGETQRCODEURL=true;
 				}
 			}
+			if (act==MainActivity.GETZFBUID) {
+				String msg = jobject.getString("msg");
+				if (instance.isGETZFBUID==false) {
+					SystemHelper.setTopApp(instance);
+					Log.T("UID:"+msg);	
+					CreateXQDAccount.setUID(msg);
+					SharedPreferences sp = instance.getSharedPreferences("UserData", Activity.MODE_PRIVATE);//创建sp对象
+		            SharedPreferences.Editor editor = sp.edit() ;
+		            editor.putString("zfbuid", msg) ; 
+		            editor.commit() ;//提交
+		            instance.isGETZFBUID=true;
+				}
+			}
 			if (act==MainActivity.CHECKBDWANGXIN) {
 				String msg = jobject.getString("msg");
 				if (instance.isBDWangXin==false) {
@@ -473,24 +522,17 @@ public class NetDoActions {
 					instance.isBDWangXin=true;
 				}
 			}
-			if (act==MainActivity.CHECKWANGXINACCOUNT) {
-				String msg = jobject.getString("msg");
-				if (instance.BDWangXinACCOUNT==false) {
-					Log.T("当前账户:"+msg);
-					instance.wxaccount=msg;
-					instance.BDWangXinACCOUNT=true;
-				}
-			}
-			if (act==MainActivity.GETCONVERSATIONID) {
-				String msg = jobject.getString("msg");
-				if (!instance.converstationid.equals(msg)) {
-					Log.T("当前群ID:"+msg);
-					instance.converstationid=msg;
-				}
-			}
-			if (act==MainActivity.instance.GETMSG) {
+			if (act==MainActivity.GETMSG) {
 				String msg = jobject.getString("msg");
 				Log.T(msg);
+			}
+			if (act==MainActivity.GETXIANYU) {
+				String sessionid = jobject.getString("sessionid");
+				String businessId = jobject.getString("businessId");
+				String payeeNick = jobject.getString("payeeNick");
+				Log.T("sessionid="+sessionid);
+				Log.T("businessId="+businessId);
+				Log.T("payeeNick="+payeeNick);
 			}
 			if(act==MainActivity.EXIT)
 			{

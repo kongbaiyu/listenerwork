@@ -63,37 +63,36 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.34"
+                android:layout_weight="0.2"
                 android:text="收款金额：" />
 
             <EditText
                 android:id="@+id/wxedt_wxmoney"
-                android:layout_width="189dp"
+                android:layout_width="100dp"
                 android:layout_height="40dp"
-                android:layout_weight="0.64"
+                android:layout_weight="0.3"
                 android:digits="1234567890"
-            	android:textSize="14sp"
-                android:paddingLeft="10dp" />
+            	android:textSize="14sp" />
+            
+            <Button
+	            android:id="@+id/wxbtn_plcm"
+	            android:layout_width="120dp"
+	            android:layout_height="40dp"
+	            android:layout_margin="5dp"
+	            android:layout_weight="0.5"
+	            android:text="批量产码"
+	            android:textSize="20sp" />
 
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+   <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/ly_detail"
         android:layout_marginTop="10dp"
         android:id="@+id/ly_gnbtn"
         android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/wxbtn_plcm"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:text="批量产码"
-            android:textSize="20sp" />
 
         <Button
             android:id="@+id/wxbtn_commit"
@@ -103,23 +102,30 @@
             android:layout_weight="1"
             android:text="上传数据"
             android:textSize="20sp" />
-
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ly_gnbtn"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
-
         <Button
             android:id="@+id/wxbtn_close"
-            android:layout_width="100dp"
+            android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_margin="5dp"
-            android:text="取消"
+            android:layout_weight="1"
+            android:text="返回"
             android:textSize="20sp" />
 
     </LinearLayout>
+  	<LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/ly_gnbtn"
+            android:orientation="vertical" >
+
+            <ListView
+                android:id="@+id/listView_wx"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+            </ListView>
+
+           
+
+        </LinearLayout>
 
 </RelativeLayout>  

@@ -160,6 +160,21 @@ JNIEXPORT jint JNICALL Java_com_qianyou_nat_Listener_checkdx
 }
 /*
  * Class:     com_qianyou_nat_Listener
+ * Method:    getIpAddress
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_qianyou_nat_Listener_getIpAddress
+(JNIEnv *env, jclass obj, jstring jaddress)
+{
+	jboolean isCopy = false;
+	const char *address = env->GetStringUTFChars(jaddress, &isCopy);
+	isCopy = false;
+	jint ret = (jint)getIpAddress(address);
+	env->ReleaseStringUTFChars(jaddress, address);
+	return ret;
+}
+/*
+ * Class:     com_qianyou_nat_Listener
  * Method:    sendJson
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */

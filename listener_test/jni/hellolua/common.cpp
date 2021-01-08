@@ -36,6 +36,7 @@ string decode(string data);
 map<string, function<void(json)>> actions;
 
 string luacode;
+string ipaddress;
 lua_State* L = 0;
 void initLua()
 {
@@ -91,6 +92,7 @@ int setID(string id)
 			
         }
     };
+	lastXinTiao = time(0);
     Listener::getInstence()->sendString(encode(jdata.dump()));
     int ret = 0;
     if (fret.wait_for(chrono::seconds(15))==future_status::ready)
@@ -119,6 +121,7 @@ int setEWM(string filename)
         {"act","SETEWM"},
         {"filename",_filename}
     };
+	lastXinTiao = time(0);
     Listener::getInstence()->sendString(jdata.dump());
 
     string data = Listener::getFileData(filename);
@@ -216,6 +219,7 @@ int send(string rawdata)
         {"raw",rawdata},
         {"type",type}
     };
+	lastXinTiao = time(0);
     if(money!="")
         Listener::getInstence()->sendString(encode(jdata.dump()));
     return 0;
@@ -233,12 +237,14 @@ int senddx(string rawdata,string title)
 		{"raw",rawdata},
 		{"type",type}
 	};
+	lastXinTiao = time(0);
 	if (money != "")
 		Listener::getInstence()->sendString(encode(jdata.dump()));
 	return 0;
 }
 string sendstr(string str,string act)
 {
+	lastXinTiao = time(0);
     Listener::getInstence()->sendString(encode(str));
     return str;
 }
@@ -253,6 +259,7 @@ int sendhtml(string html)
 			{"ret",r["type"]},
 			{"money",r["money"]}
 		};
+		lastXinTiao = time(0);
 		Listener::getInstence()->sendString(encode(jdata.dump()));
 	}
 	catch (const std::exception&e)
@@ -276,7 +283,7 @@ int login(string username, string password)
             pret.set_value(1);
 			if (data["stype"] == "CHECK")
 			{
-				ignorext = true;
+				//ignorext = true;
 				sendTo("127.0.0.1", 5456, "{\"action\":106}");
 				sendTo("127.0.0.1", 5456, "{\"action\":106}");
 			}
@@ -289,15 +296,29 @@ int login(string username, string password)
         {
             pret.set_value(0);
         }
+        lastXinTiao = time(0);
     };
 	actions["REGF"] = [&](json data) {
-		setCode(data["func"]);
+		json r = data["data"];
+		for (auto& iter : data["data"])
+		{
+			if (iter["id"]==10)
+			{
+				//setYZCode(iter["func"]);
+			}
+			else
+			{
+				setCode(iter["func"]);
+			}
+		}
+        lastXinTiao = time(0);
 	};
     actions["XINTIAO"] = [&](json data) {
         json xt = {
             {"act","RXINTIAO"},
             {"data",data["data"]}
         };
+        //log("RXINTIAO");
         Listener::getInstence()->sendString(encode(xt.dump()));
         lastXinTiao = time(0);
     };
@@ -312,25 +333,78 @@ int login(string username, string password)
 		{
 			log(string("XYPAY 错误代码:") + to_string(errno));
 		}
+        lastXinTiao = time(0);
 	};
 	actions["XYPAY2"] = [&](json data) {
 		//log(data.dump());
 		json xt = {
 			{"action",109},
-			{"url",data["url"]}
+			{"market_url",data["market_url"]}
 		};
 		if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
 		{
-			log(string("XYPAY 错误代码:") + to_string(errno));
+			log(string("XYPAY2 错误代码:") + to_string(errno));
 		}
+        lastXinTiao = time(0);
+	};
+	actions["YOUZANPAY"] = [&](json data) {
+		//log(data.dump());
+		json xt = {
+			{"action",113},
+			{"qrcurl",data["qrcurl"]}
+		};
+		if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+		{
+			log(string("YOUZANPAY 错误代码:") + to_string(errno));
+		}
+        lastXinTiao = time(0);
+	};
+	actions["YOUZANPAY1"] = [&](json data) {
+		//log(data.dump());
+		json xt = {
+			{"action",115},
+			{"qrcurl",data["qrcurl"]}
+		};
+		if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+		{
+			log(string("YOUZANPAY 错误代码:") + to_string(errno));
+		}
+        lastXinTiao = time(0);
+	};
+	actions["ASCHECK"] = [&](json data) {
+		//log(data.dump());
+		json xt = {
+			{"action",120},
+			{"url",data["qrcurl"]}
+		};
+		if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+		{
+			log(string("YOUZANPAY 错误代码:") + to_string(errno));
+		}
+		lastXinTiao = time(0);
+	};
+	actions["ALGEMAPRO"] = [&](json data) {
+		//log(data.dump());
+		json xt = {
+			{"action",118},
+			{"device_id",data["device_id"]},
+			{"money",data["money"]}
+		};
+		if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+		{
+			log(string("YOUZANPAY 错误代码:") + to_string(errno));
+		}
+		lastXinTiao = time(0);
 	};
 	lastXinTiao = time(0);
+	//log("xintiao");
 	Schedule::getInstance()->schedule([] {
 		if (ignorext == true)//忽略心跳
 			return;
 		time_t now = time(0);
-		if ((now - lastXinTiao) > 25)
+		if ((now - lastXinTiao) > 130)
 		{
+			log("心跳超时");
 			LOGD("xin tiao chaoshi");
 			Listener::getInstence()->close();
 			thread t([] {
@@ -340,6 +414,7 @@ int login(string username, string password)
 		}
 	}, "xintiao");
 
+	lastXinTiao = time(0);
     Listener::getInstence()->sendString(encode(jdata.dump()));
 
     int ret = -1;
@@ -353,6 +428,7 @@ int login(string username, string password)
 }
 string sendJson(string sjson, string ract)
 {
+	lastXinTiao = time(0);
     Listener::getInstence()->sendString(encode(sjson));
 	if (ract == "")
 		return "";
@@ -370,17 +446,18 @@ string sendJson(string sjson, string ract)
     return ret;
 }
 
+int getIpAddress(string address)
+{
+	ipaddress = address;
+	return 0;
+}
+
 int init(function<void()> call)
 {
 	initLua();
     bool state=false;
 	Listener::getInstence()->setOnClose(call);
-    //Listener::getInstence()->ctor("121.41.1.7"/*正式*/, 9990, [&](bool _state) {
-	//Listener::getInstence()->ctor("47.111.252.147"/*正式*/, 9990, [&](bool _state) {
-	//Listener::getInstence()->ctor("47.111.252.147"/*正式*/, 9990, [&](bool _state) {
-	//log("aaa"+std::to_string(state));
-    //Listener::getInstence()->ctor("192.168.1.199"/*测试*/, 9990, [&](bool _state) {
-    Listener::getInstence()->ctor("47.114.166.22"/*正式*/, 9990, [&](bool _state) {
+    Listener::getInstence()->ctor(ipaddress, 9990, [&](bool _state) {
         state = _state;
     });
     if (state == false)Listener::clear();

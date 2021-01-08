@@ -72,7 +72,7 @@ public class GetHongBaoCallBackProxy implements InvocationHandler {
           intent.putExtra("bill_money", (String)paramObject);
           intent.putExtra("bill_mark", this.orderid);
           intent.putExtra("bill_type", "wangxin");
-          intent.setAction("com.tools.payhelper.billreceived");
+          intent.setAction("com.qianyou.wangxin.billreceived");
           this.context.sendBroadcast(intent);
           //MobileImHook.dataMap.remove(this.hongbaoid);
         } 

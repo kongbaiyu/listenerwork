@@ -10,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,9 +18,11 @@ import org.json.JSONObject;
 
 import android.os.Message;
 
+import com.qianyou.chajian.AliPayHook;
 import com.qianyou.listener5.Log;
 import com.qianyou.listener5.MainActivity;
 import com.qianyou.listener5.R;
+import com.qianyou.listener5.R.string;
 import com.qianyou.listener5.SLog;
 
 public class Listener {
@@ -42,6 +45,7 @@ public class Listener {
 	public static native int sendHtml(String html);
 	public static native void destory();
 	public static native String sendJson(String json,String ract);
+	public static native int getIpAddress(String address);
 	public Listener(){
 		_init();
 		new Thread(new Runnable() {
@@ -79,6 +83,9 @@ public class Listener {
 	{
 		while(true)
 		{
+			String ipaddress = parseHostGetIPAddress();
+			//Log.T("aaaaaaa="+ipaddress);
+			int aa = getIpAddress(ipaddress);
 			int r=init(); //第一次连接，连接成功则继续
 			boolean ret=(r==1);
 			if(ret)
@@ -160,7 +167,9 @@ public class Listener {
 	}
 	public static void wantdl()
 	{
-		dengludjs=6;
+		Random r = new Random();
+        int b = r.nextInt(20) + 6;
+		dengludjs=b;
 	}
 	public static void dl()
 	{
@@ -229,12 +238,16 @@ public class Listener {
 				isDuanKai=true;
 				boolean connectret=false;
 				Log.T("服务器已经断开，正在重连中。。。");
+				String ipaddress = parseHostGetIPAddress();
+				int aaString = getIpAddress(ipaddress);
 				connectret=(init()==1);
 				if(connectret==false)
 				{
 					//Log.T("connectret false");
 					try {
-						Thread.sleep(1000);
+						Random r = new Random();
+				        int b = r.nextInt(30) + 6;
+						Thread.sleep(b*1000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -338,5 +351,26 @@ public class Listener {
 		jo.put("data", jod);
 		sendJson(jo.toString(), "REDIAOXIAN");
 	}
+	public static String parseHostGetIPAddress() {
+		String host = MainActivity.instance.getResources().getString(R.string.server);
+		host = AliPayHook.getTextCenter(host, "//", "/");
+		//Log.T(host);
+        String[] ipAddressArr = null;
+        try {
+            InetAddress[] inetAddressArr = InetAddress.getAllByName(host);
+            if (inetAddressArr != null && inetAddressArr.length > 0) {
+                ipAddressArr = new String[inetAddressArr.length];
+                for (int i = 0; i < inetAddressArr.length; i++) {
+                    ipAddressArr[i] = inetAddressArr[i].getHostAddress();
+                    //Log.T("iiiiiip"+i+":=="+ipAddressArr[i]);
+                }
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return null;
+        }
+        //Log.T("qq="+ipAddressArr[0]);
+        return ipAddressArr[0];
+    }
 
 }

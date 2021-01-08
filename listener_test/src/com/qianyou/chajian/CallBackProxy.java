@@ -10,8 +10,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.google.gson.Gson;
-import com.qianyou.listener5.Log;
-
 import de.robv.android.xposed.XposedBridge;
 
 public class CallBackProxy implements InvocationHandler {
@@ -30,9 +28,10 @@ public class CallBackProxy implements InvocationHandler {
     this.amount = stringBuilder.toString();
   }
   
-  public Object invoke(Object paramObject, Method paramMethod, Object[] paramArrayOfObject) throws Throwable {
+  @SuppressWarnings("deprecation")
+public Object invoke(Object paramObject, Method paramMethod, Object[] paramArrayOfObject) throws Throwable {
 	  XposedBridge.log("啊啊啊="+paramArrayOfObject);
-    XposedBridge.log("铃铛invoke CallBackProxy method: "+paramMethod.getName());
+    //XposedBridge.log("铃铛invoke CallBackProxy method: "+paramMethod.getName());
     if (paramArrayOfObject != null) {
       XposedBridge.log("铃铛CallBackProxy method params = "+Arrays.toString(paramArrayOfObject));
       int i;
@@ -54,7 +53,7 @@ public class CallBackProxy implements InvocationHandler {
         jo.put("mark", this.orderid);
         jo.put("type", "wangxin");
         jo.put("msg", Arrays.toString(paramArrayOfObject));
-        jo.put("actiontype","com.tools.payhelper.qrcodereceived.fail");
+        jo.put("actiontype","com.qianyou.wangxin.qrcodereceived.fail");
         this.context.sendBroadcast((Intent)paramObject);
       } 
     } else if (paramMethod.getName().contains("onSuccess")) {
@@ -78,34 +77,39 @@ public class CallBackProxy implements InvocationHandler {
     	paramObject = paramArrayOfObject[0];
     	XposedBridge.log("啊啊啊=="+paramObject);
         paramObject = (new Gson()).toJson(paramObject);
-        XposedBridge.log("aaaaa="+paramObject);
+        //XposedBridge.log("aaaaa="+paramObject);
         StringBuilder stringBuilder1 = new StringBuilder();
         stringBuilder1.append(" onSuccess ");
         stringBuilder1.append((String)paramObject);
-        XposedBridge.log(stringBuilder1.toString());
+        //XposedBridge.log(stringBuilder1.toString());
         JSONObject paramObject1 = (JSONObject) (new JSONArray((String)paramObject)).get(0);
         XposedBridge.log("唉唉唉="+paramObject1);
         JSONObject jSONObject = paramObject1.getJSONObject("alipayParam");
         paramObject = paramObject1.optString("hongbaoId");
+        String templateData = paramObject1.optString("templateData");
+        String urlString=AliPayHook.getTextCenter(templateData, "https:", "%3D0");
+        XposedBridge.log(urlString);
+        //XposedBridge.log(templateData);
         String str = jSONObject.optString("url");
         StringBuilder stringBuilder2 = new StringBuilder();
         stringBuilder2.append("url =");
         stringBuilder2.append(str);
         stringBuilder2.append(" hongbaoId =");
         stringBuilder2.append((String)paramObject);
-      XposedBridge.log(stringBuilder2.toString());
-      stringBuilder2 = new StringBuilder();
-      stringBuilder2.append("URLDecoder :");
-      stringBuilder2.append(URLDecoder.decode(str));
-      XposedBridge.log(stringBuilder2.toString());
-      Intent intent = new Intent();
-      intent.putExtra("money", this.amount);
-      intent.putExtra("mark", this.orderid);
-      intent.putExtra("orderNo", (String)paramObject);
-      intent.putExtra("type", "wangxin");
-      intent.putExtra("payurl", str);
-      intent.setAction("com.tools.payhelper.qrcodereceived");
-      this.context.sendBroadcast(intent);
+        //XposedBridge.log(stringBuilder2.toString());
+        stringBuilder2 = new StringBuilder();
+        stringBuilder2.append("啊啊URLDecoder :");
+        stringBuilder2.append(URLDecoder.decode(str));
+        XposedBridge.log(stringBuilder2.toString());
+        Intent intent = new Intent();
+        intent.putExtra("money", this.amount);
+        intent.putExtra("mark", this.orderid);
+        intent.putExtra("orderNo", (String)paramObject);
+        intent.putExtra("type", "wangxin");
+        intent.putExtra("payurl", str);
+        intent.putExtra("url", urlString);
+        intent.setAction("com.qianyou.wangxin.qrcodereceived");
+        this.context.sendBroadcast(intent);
     } 
     if (paramMethod.getName().contains("toString")) {
       paramObject = new StringBuilder();

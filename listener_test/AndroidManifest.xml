@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.qianyou.listener5"
     android:versionCode="1"
-    android:versionName="1.03" >
+    android:versionName="1.13" >
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -35,7 +35,8 @@
             </intent-filter>
         </activity>
         
-        <activity android:name="com.qianyou.other.WangXinHongBao"></activity>
+        <activity android:name="com.qianyou.wangxin.WangXinHongBao"></activity>
+        <activity android:name="com.qianyou.listener5.CreateXQDAccount"></activity>
         
         <service
 	        android:name="com.qianyou.listener5.NLService"

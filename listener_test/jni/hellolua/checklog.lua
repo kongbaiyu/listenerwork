@@ -14,7 +14,8 @@ end
 function mathhtml(data)
 	local mmoney=""
 	local mtype ="NA"
-	local result = string.format('{"type":"%s","money":"%s"}',mtype,mmoney)
+	local title=""
+	local result = string.format('{"type":"%s","money":"%s","title":"%s"}',mtype,mmoney,title)
 	local checkdata = split(data, ">闲鱼商品不支持7天无理由<")
 	if #checkdata~=2 then return result end
 	local m,n
@@ -47,6 +48,19 @@ function mathhtml(data)
 	if checkm~=nil then
 		mmoney = string.match(checkm,"[%d.]+")
 	end
-	result = string.format('{"type":"%s","money":"%s"}',mtype,mmoney)
+	
+	local checktitle = checkdata[2]
+	local a1,a2 = string.find(checktitle,"overflow: hidden;\">")
+	print(a1,a2)
+	local b1,b2
+	if a2~=nil then
+		b1,b2 = string.find(checktitle,"</span></div>",a2)
+		print(b1,b2)
+	end
+	title = string.sub(checktitle,a2+1,b1-1)
+	print(title)
+	title = string.gsub(title," ","")
+	result = string.format('{"type":"%s","money":"%s","title":"%s"}',mtype,mmoney,title)
+	print(result)
 	return result
 end

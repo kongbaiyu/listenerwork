@@ -76,6 +76,13 @@ JNIEXPORT jint JNICALL Java_com_qianyou_nat_Listener_sendHtml
   (JNIEnv *, jclass, jstring);
 /*
  * Class:     com_qianyou_nat_Listener
+ * Method:    getIpAddress
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_qianyou_nat_Listener_getIpAddress
+  (JNIEnv *, jclass, jstring);
+/*
+ * Class:     com_qianyou_nat_Listener
  * Method:    destory
  * Signature: ()V;
  */

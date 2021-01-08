@@ -13,7 +13,7 @@ import android.net.Uri;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.qianyou.other.Util;
+import com.qianyou.wangxin.Util;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -29,7 +29,7 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
 public class MobileImHook {
-	public static String account;
+	  public static String account;
 	  
 	  public static String appkey = "12621186";
 	  
@@ -75,7 +75,7 @@ public class MobileImHook {
 	              XposedBridge.log(stringBuilder.toString());
 	              Intent intent = new Intent();
 	              intent.putExtra("currentAc", MobileImHook.account);
-	              intent.setAction("com.tools.payhelper.current.account");
+	              intent.setAction("com.qianyou.wangxin.current.account");
 	              context.sendBroadcast(intent);
 	            } 
 	          }
@@ -86,7 +86,7 @@ public class MobileImHook {
               stringBuilder.append(" 收到消息 ");
               stringBuilder.append(param1MethodHookParam.args[0]);
               //XposedBridge.log(stringBuilder.toString());
-              Toast.makeText(context,"收到红包消息",0).show();
+              //Toast.makeText(context,"收到红包消息",0).show();
               List list = (List)param1MethodHookParam.args[1];
               //XposedBridge.log("数组=="+list);
               for(int i=0;i<list.size();i++){
@@ -98,24 +98,24 @@ public class MobileImHook {
             	  //XposedBridge.log("aaaaaatrr=="+str);
             	  JSONObject jobject = new JSONObject(str);
             	  //XposedBridge.log("转为String类型=="+str);
-            	  XposedBridge.log("JSON数据="+jobject);
-            	  XposedBridge.log("JSON数据="+jobject.getString("msgType"));
+            	  //XposedBridge.log("JSON数据="+jobject);
+            	  //XposedBridge.log("JSON数据="+jobject.getString("msgType"));
                 if (jobject.getString("msgType").equals("211")) {
                   str = jobject.getString("content");
                   StringBuilder stringBuilder2 = new StringBuilder();
                   stringBuilder2.append("红包消息体：");
                   stringBuilder2.append(str);
-                  XposedBridge.log(stringBuilder2.toString());
+                  //XposedBridge.log(stringBuilder2.toString());
                   str = (new JSONObject(str)).optJSONObject("template").optJSONObject("data").optJSONObject("body").optJSONArray("ac").getString(0);
                   stringBuilder2 = new StringBuilder();
                   stringBuilder2.append(" 红包连接 ");
                   stringBuilder2.append(str);
-                  XposedBridge.log(stringBuilder2.toString());
+                  //XposedBridge.log(stringBuilder2.toString());
                   String str4 = URLDecoder.decode(str);
                   StringBuilder stringBuilder1 = new StringBuilder();
                   stringBuilder1.append(" 红包连接 decode");
                   stringBuilder1.append(str4);
-                  XposedBridge.log(stringBuilder1.toString());
+                  //XposedBridge.log(stringBuilder1.toString());
                   Uri uri = Uri.parse(str4);
                   String str3 = uri.getQueryParameter("ActionExtraParam");
                   String str1 = uri.getQueryParameter("sender");
@@ -126,26 +126,26 @@ public class MobileImHook {
                   stringBuilder4.append(str1);
                   stringBuilder4.append("备注：");
                   stringBuilder4.append(str2);
-                  XposedBridge.log(stringBuilder4.toString());
+                  //XposedBridge.log(stringBuilder4.toString());
                   if (str1 == null) {
                     str1 = str4.substring(str4.indexOf("sender=") + "sender=".length(), str4.length());
                     StringBuilder stringBuilder5 = new StringBuilder();
                     stringBuilder5.append("s = ");
                     stringBuilder5.append(str1);
-                    XposedBridge.log(stringBuilder5.toString());
+                    //XposedBridge.log(stringBuilder5.toString());
                     str1 = str1.split("&")[0];
                     stringBuilder5 = new StringBuilder();
                     stringBuilder5.append("获取红包发送人null：");
                     stringBuilder5.append(str1);
-                    XposedBridge.log(stringBuilder5.toString());
+                    //XposedBridge.log(stringBuilder5.toString());
                   } 
                   StringBuilder stringBuilder3 = new StringBuilder();
                   stringBuilder3.append(" 红包信息 =");
                   stringBuilder3.append(str3);
                   stringBuilder3.append(" sender=");
                   stringBuilder3.append(str1);
-                  XposedBridge.log(stringBuilder3.toString());
-                  XposedBridge.log("少时诵诗书context="+context+"; str1="+str1+"; str3="+str3+"; str2="+str2);
+                  //XposedBridge.log(stringBuilder3.toString());
+                  //XposedBridge.log("少时诵诗书context="+context+"; str1="+str1+"; str3="+str3+"; str2="+str2);
                   //if (MobileImHook.canRob)
                   MobileImHook.tryGetHongbao(context, str1, str3, str2); 
                 } 
@@ -175,13 +175,13 @@ public class MobileImHook {
                       XposedBridge.log("注册hook广播");
                       MobileImHook.this.myReceiver = new MobileImHook.MyReceiver();
                       intentFilter = new IntentFilter();
-                      intentFilter.addAction("com.tools.payhelper.wangxin");
-                      intentFilter.addAction("com.tools.payhelper.rob");
-                      intentFilter.addAction("com.tools.payhelper.check.wx");
-                      intentFilter.addAction("com.tools.payhelper.to.h5");
+                      intentFilter.addAction("com.qianyou.wangxin.wangxin");
+                      intentFilter.addAction("com.qianyou.wangxin.rob");
+                      intentFilter.addAction("com.qianyou.wangxin.check.wx");
+                      intentFilter.addAction("com.qianyou.wangxin.to.h5");
                       ((Activity)param1MethodHookParam.thisObject).registerReceiver(MobileImHook.this.myReceiver, intentFilter);
                       intent = new Intent();
-                      intent.setAction("com.tools.payhelper.check.can.rob");
+                      intent.setAction("com.qianyou.wangxin.check.can.rob");
                       context.sendBroadcast(intent);
                       return;
                     } 
@@ -209,7 +209,7 @@ public class MobileImHook {
                 Toast.makeText(context, str1, Toast.LENGTH_SHORT).show();
                 Intent intent1 = new Intent();
                 intent1.putExtra("conId", str2);
-                intent1.setAction("com.tools.payhelper.current.conid");
+                intent1.setAction("com.qianyou.wangxin.current.conid");
                 context.sendBroadcast(intent1);
               } 
             }
@@ -258,7 +258,7 @@ public class MobileImHook {
 	                        intent.putExtra("payurl", MobileImHook.cPayUrl);
 	                        intent.putExtra("qunId", MobileImHook.currentQunId);
 	                        intent.putExtra("h5Url", str4);
-	                        intent.setAction("com.tools.payhelper.to.h5.back");
+	                        intent.setAction("com.qianyou.wangxin.to.h5.back");
 	                        context.sendBroadcast(intent);
 	                      } 
 	                    } 
@@ -283,28 +283,28 @@ public class MobileImHook {
 	  
 	  
 	  public static void createQunHonginfo(Context paramContext,final long money, final String qunid, final String title) {
-		  XposedBridge.log("aaaaaaaaaaaa"+money+"------"+qunid+"----"+title+"------"+wxclassLoader+"-----"+account+"-----"+appkey);
+		    XposedBridge.log("aaaaaaaaaaaa"+money+"------"+qunid+"----"+title+"------"+wxclassLoader+"-----"+account+"-----"+appkey);
 		    Object object = (Object)XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.alibaba.mobileim.YWAPI", wxclassLoader), "getIMKitInstance", new Object[] { account, appkey });
-		   XposedBridge.log("ccccccccc"+object);
+		   //XposedBridge.log("ccccccccc"+object);
 		    StringBuilder stringBuilder2 = new StringBuilder();
 		    stringBuilder2.append("mIMKit ");
 		    stringBuilder2.append(object);
-		    XposedBridge.log(stringBuilder2.toString());
+		    //XposedBridge.log(stringBuilder2.toString());
 		    final Object WxAccount = XposedHelpers.callMethod(XposedHelpers.callMethod(object, "getIMCore", new Object[0]), "getWxAccount", new Object[0]);
 		    Object object2 = WxAccount;
-		    XposedBridge.log("WxAccount=="+WxAccount);
+		    //XposedBridge.log("WxAccount=="+WxAccount);
 		    final Object HongbaoManager = XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.alibaba.mobileim.lib.presenter.hongbao.HongbaoManager", wxclassLoader), "getInstance", new Object[0]);
 		    Object object3 = HongbaoManager;
-		    XposedBridge.log("object3=="+object3);
+		    //XposedBridge.log("object3=="+object3);
 		    final String createHongbaoId = (String)XposedHelpers.callMethod(object3, "createHongbaoId", new Object[] { object2 });
 		    object = (Object)new StringBuilder();
 		    String str = createHongbaoId;
-		    XposedBridge.log("红包id=="+str);
+		    //XposedBridge.log("红包id=="+str);
 		    final long uuid = ((Long)XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.alibaba.mobileim.channel.util.WXUtil", wxclassLoader), "getUUID", new Object[0])).longValue();
 		    object = (Object)new StringBuilder();
 //		    object.append("uuid ");
 //		    object.append(l);
-		    XposedBridge.log("uuid==="+uuid);
+		    //XposedBridge.log("uuid==="+uuid);
 		    try {
 		      object = (Object)wxclassLoader.loadClass("com.alibaba.mobileim.channel.event.IWxCallback");
 		    } catch (ClassNotFoundException classNotFoundException) {
@@ -315,7 +315,7 @@ public class MobileImHook {
 		    final Object param9 = Proxy.newProxyInstance(wxclassLoader, new Class[] { XposedHelpers.findClass("com.alibaba.mobileim.channel.event.IWxCallback", wxclassLoader) }, (InvocationHandler)callBackProxy);
 		    StringBuilder stringBuilder1 = new StringBuilder();
 		    Object object1 = param9;
-		    XposedBridge.log("object1==="+object1);
+		    //XposedBridge.log("object1==="+object1);
 		    stringBuilder1 = new StringBuilder();
 		    stringBuilder1.append("创建红包完毕...");
 		    stringBuilder1.append(str);
@@ -331,8 +331,8 @@ public class MobileImHook {
 		    	(new Thread(new Runnable() {
 		            public void run() {
 		            	//XposedBridge.log("================================createhongbao");
-		            	//XposedBridge.log(WxAccount+"---crestehongbaoid="+createHongbaoId+"---money="+Long.valueOf(money)+";	int="+Integer.valueOf(1)+";--title="+title+";  qunid="+qunid+";  uuid="+Long.valueOf(uuid)+";  param9="+param9);
-		              XposedHelpers.callMethod(HongbaoManager, "createHongbao", new Object[] { WxAccount, createHongbaoId, Long.valueOf(money), Integer.valueOf(1), Integer.valueOf(1), title, qunid, Long.valueOf(uuid), param9 });
+		            	XposedBridge.log(WxAccount+"---crestehongbaoid="+createHongbaoId+"---money="+Long.valueOf(money)+";	int="+Integer.valueOf(1)+";--title="+title+";  qunid="+qunid+";  uuid="+Long.valueOf(uuid)+";  param9="+param9);
+		            	XposedHelpers.callMethod(HongbaoManager, "createHongbao", new Object[] { WxAccount, createHongbaoId, Long.valueOf(money), Integer.valueOf(1), Integer.valueOf(1), title, qunid, Long.valueOf(uuid), param9 });
 		            }
 		          })).start();
 		    	return;
@@ -350,19 +350,19 @@ public class MobileImHook {
 		      stringBuilder.append(paramString3);
 		      stringBuilder.append("hongbao_id:");
 		      stringBuilder.append(hongbao_id);
-		      XposedBridge.log(stringBuilder.toString());
+		      //XposedBridge.log(stringBuilder.toString());
 		      Object object = (Object)XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.alibaba.mobileim.YWAPI", wxclassLoader), "getIMKitInstance", new Object[] { account, appkey });
 		      stringBuilder = new StringBuilder();
 		      stringBuilder.append("mIMKit ");
 		      stringBuilder.append(object);
-		      XposedBridge.log(stringBuilder.toString());
+		      //XposedBridge.log(stringBuilder.toString());
 		      final Object WxAccount = XposedHelpers.callMethod(XposedHelpers.callMethod(object, "getIMCore", new Object[0]), "getWxAccount", new Object[0]);
 		      object = (Object)new StringBuilder();
 		      ((StringBuilder) object).append("WxAccount ");
 		      ((StringBuilder) object).append(WxAccount);
-		      XposedBridge.log(object.toString());
+		      //XposedBridge.log(object.toString());
 		      final Object HongbaoManager = XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.alibaba.mobileim.lib.presenter.hongbao.HongbaoManager", wxclassLoader), "getInstance", new Object[0]);
-			  XposedBridge.log("HongbaoManager==="+HongbaoManager);
+			  //XposedBridge.log("HongbaoManager==="+HongbaoManager);
 		      try {
 			      object = (Object)wxclassLoader.loadClass("com.alibaba.mobileim.channel.event.IWxCallback");
 			    } catch (ClassNotFoundException classNotFoundException) {
@@ -371,7 +371,7 @@ public class MobileImHook {
 			    } 
 		      GetHongBaoCallBackProxy getHongBaoCallBackProxy = new GetHongBaoCallBackProxy(paramContext, paramString3, hongbao_id);
 		      final Object param4 = Proxy.newProxyInstance(wxclassLoader, new Class[] { XposedHelpers.findClass("com.alibaba.mobileim.channel.event.IWxCallback", wxclassLoader) }, (InvocationHandler)getHongBaoCallBackProxy);
-			  XposedBridge.log("param4=="+param4);  
+			  //XposedBridge.log("param4=="+param4);  
 			  (new Thread(new Runnable() {
 				
 				  @Override
@@ -382,7 +382,7 @@ public class MobileImHook {
 			            } catch (InterruptedException interruptedException) {
 			              interruptedException.printStackTrace();
 			            } 
-			            XposedBridge.log("WxAccount="+WxAccount+"; sender="+sender+";hongbao_id="+hongbao_id+"; param4="+param4);
+			            //XposedBridge.log("WxAccount="+WxAccount+"; sender="+sender+";hongbao_id="+hongbao_id+"; param4="+param4);
 			            XposedHelpers.callMethod(HongbaoManager, "tryGetHongbao", new Object[] { WxAccount, sender, hongbao_id, param4 });
 					}
 			  })).start();
@@ -412,7 +412,7 @@ public class MobileImHook {
 		      StringBuilder stringBuilder;
 		      String str;
 		      Intent intent = param1Intent;
-		      if (param1Intent.getAction().equals("com.tools.payhelper.wangxin")) {
+		      if (param1Intent.getAction().equals("com.qianyou.wangxin.wangxin")) {
 		        String str2 = param1Intent.getStringExtra("money");
 		        String str1 = param1Intent.getStringExtra("qunid");
 		        str = param1Intent.getStringExtra("orderid");
@@ -434,15 +434,15 @@ public class MobileImHook {
 		        MobileImHook.createQunHonginfo(param1Context, i, str1, str);
 		        return;
 		      } 
-		      if (param1Intent.getAction().equals("com.tools.payhelper.rob")) {
+		      if (param1Intent.getAction().equals("com.qianyou.wangxin.rob")) {
 		        MobileImHook.canRob = param1Intent.getBooleanExtra("canRob", false);
 		        stringBuilder = new StringBuilder();
 		        stringBuilder.append("是否抢包");
 		        stringBuilder.append(MobileImHook.canRob);
-		        XposedBridge.log(stringBuilder.toString());
+		       // XposedBridge.log(stringBuilder.toString());
 		        return;
 		      } 
-		      if (intent.getAction().equals("com.tools.payhelper.to.h5")) {
+		      if (intent.getAction().equals("com.qianyou.wangxin.to.h5")) {
 		        MobileImHook.cMoney = intent.getStringExtra("money");
 		        MobileImHook.cMark = intent.getStringExtra("mark");
 		        MobileImHook.cOrderNo = intent.getStringExtra("orderNo");
@@ -455,7 +455,7 @@ public class MobileImHook {
 		        stringBuilder.append(MobileImHook.cOrderNo);
 		        stringBuilder.append("\n");
 		        stringBuilder.append(MobileImHook.currentQunId);
-		        XposedBridge.log(stringBuilder.toString());
+		        //XposedBridge.log(stringBuilder.toString());
 		        //MobileImHook.getWangXinH5(MobileImHook.cPayUrl, MobileImHook.currentQunId);
 		      } 
 		    }

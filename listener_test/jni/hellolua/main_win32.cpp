@@ -29,7 +29,7 @@ int main(int argc ,char**argv)
     {
         //username = argv[1];
         //password = argv[2];
-		username = "paytest";
+		username = "test";
 		password = "123456";
         login(username, password);
         //Listener::getInstence()->close();
