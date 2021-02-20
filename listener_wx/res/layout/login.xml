@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#555561"
+    android:orientation="vertical" >
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_launcher" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="vertical" >
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="10dp"
+            android:layout_height="match_parent" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.88"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.34"
+                    android:text="账号："
+                    android:textColor="@android:color/white" />
+
+                <EditText
+                    android:id="@+id/editText1"
+                    android:layout_width="189dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="0.64"
+                    android:background="@drawable/listener_frame01"
+                    android:ems="10"
+                    android:paddingLeft="10dp"
+                    android:textCursorDrawable="@drawable/shape_cursor_color"
+                    android:textColor="@android:color/white" >
+
+                    <requestFocus />
+                </EditText>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/textView01"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.34"
+                    android:text="密码："
+                    android:textColor="@android:color/white" />
+
+                <EditText
+                    android:id="@+id/editText01"
+                    android:layout_width="189dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="0.64"
+                    android:background="@drawable/listener_frame01"
+                    android:ems="10"
+                    android:paddingLeft="10dp"
+                    android:textCursorDrawable="@drawable/shape_cursor_color"
+                    android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:orientation="vertical" >
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="登陆"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="10dp"
+            android:layout_height="match_parent" >
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewVersion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@android:color/darker_gray" />
+
+</LinearLayout>

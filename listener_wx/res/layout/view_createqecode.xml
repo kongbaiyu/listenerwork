@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/titlelayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:padding="5dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="个码创建"
+            android:textSize="18sp"/>
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:id="@+id/ly_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/titlelayout"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.34"
+                android:text="账户名称：" />
+
+            <EditText
+                android:id="@+id/editText_qr"
+                android:layout_width="189dp"
+                android:layout_height="40dp"
+                android:layout_weight="0.64"
+            	android:textSize="14sp"
+            	android:hint="请输入账户名称"
+                android:paddingLeft="10dp" >
+
+                <requestFocus />
+            </EditText>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+        	android:layout_marginTop="10dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.34"
+                android:text="收款链接：" />
+
+            <TextView
+                android:id="@+id/txt_qrcodeurl"
+                android:layout_width="189dp"
+                android:layout_height="40dp"
+                android:layout_weight="0.64"
+                android:paddingLeft="10dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ly_detail"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_commit"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:text="创建"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:text="取消"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+</RelativeLayout>  
