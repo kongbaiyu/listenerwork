@@ -38,6 +38,7 @@ public final class R {
     public static final class id {
         public static final int button1=0x7f080006;
         public static final int checkBox1=0x7f08000d;
+        public static final int douyin=0x7f080018;
         public static final int down=0x7f080003;
         public static final int editText01=0x7f080011;
         public static final int editText1=0x7f08000f;

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.qianyou.listener5"
     android:versionCode="1"
-    android:versionName="2.20" >
+    android:versionName="2.43" >
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -17,6 +17,9 @@
    	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.CAMERA"/>
 	<uses-permission android:name="android.permission.REORDER_TASKS" />
+	<uses-permission android:name="android.permission.SEND_SMS" />
+  	<uses-permission android:name="android.permission.RECEIVE_SMS" />
+  	<uses-permission android:name="android.permission.READ_SMS" />
     
     <application
         android:allowBackup="true"

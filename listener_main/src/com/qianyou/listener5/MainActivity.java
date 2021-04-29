@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,8 +25,14 @@ import com.qianyou.chajian.AlipayBroadcast;
 import com.qianyou.jieping.Capture;
 import com.qianyou.jieping.Utils;
 import com.qianyou.listener5.R;
+import com.qianyou.listener5.R.string;
 import com.qianyou.nat.GetJsonData;
 import com.qianyou.nat.Listener;
+import com.qianyou.utils.ClientProxyBasicHttp;
+import com.qianyou.utils.SMSContentObserver;
+import com.qianyou.utils.Sign;
+import com.qianyou.utils.Tools;
+import com.qianyou.utils.UrlPost;
 
 import android.Manifest;
 import android.R.integer;
@@ -43,9 +50,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
@@ -60,6 +69,7 @@ import android.os.Messenger;
 import android.provider.Settings;
 
 import android.support.v4.app.NotificationCompat;
+import android.telephony.gsm.SmsMessage;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -73,12 +83,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -109,6 +121,15 @@ import android.widget.Toast;
 	public Button button;
 	public Button btnUP,btnDown;
 	public static String TIMEString=null;
+	public static String BANKDATA=null;
+	public static String BDEVICEID=null; //设备ID
+	
+	//抖音
+	public static String DYURL;
+	public static String DYPAYURL = "hppt";
+	public static String DYMONEY = "30";
+	public static int DYNUM=1;
+	public static int DYTOAL=1;
 	
 	public final static int OK=90;
 	public final static int EXIT=91;
@@ -138,6 +159,13 @@ import android.widget.Toast;
 	public final static int CHECKZFBGM = 120; //支付宝个码检测
 	public final static int ZFBGMSEND = 121; //支付宝个码检测结果
 	public final static int CHECKZKL = 122; //吱口令
+	public final static int DOUYINPCODE = 123; //抖音产码
+	public final static int DOUYINRESULT = 124; //抖音回调
+	public final static int BANKRESULT = 125; //短信回调
+	public final static int KAOLAGOODQUERY = 126;//考拉商品查询
+	
+	public final static int CHANGEFORMAT=221;//ImageReaderFormat
+	public final static int REBINDDEVICE=222;//接单返回
 	
 	public final static int PORT=5456;//nlservice 5457  chajian 5458 capture 5459
 	public final static String ALIPAY_PACKAGE_NAME = "com.eg.android.AlipayGphone";
@@ -163,6 +191,8 @@ import android.widget.Toast;
 	
     public int qrnum =1;
     public static String zfbqrcode ="http";
+    
+    private SMSContentObserver smsContentObserver;
     
 	public Map<String,JSONObject> senddatas=new HashMap<String, JSONObject>();
 	public Map<String, String> msels=new HashMap<String, String>();
@@ -213,6 +243,7 @@ import android.widget.Toast;
         super.onCreate(savedInstanceState);
         
         instance=this;
+        smsContentObserver = new SMSContentObserver(MainActivity.this, shandler);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         webView=null;
         netDoActions=new NetDoActions(this);
@@ -222,6 +253,8 @@ import android.widget.Toast;
 		{
 		  	gotoNotificationAccessSetting();
 		}
+//		final int REQUEST_CODE_ASK_PERMISSIONS = 123;
+//		requestPermissions(MainActivity.this, new String[]{"android.permission.READ_SMS"}, REQUEST_CODE_ASK_PERMISSIONS);
 		MainActivity.this.toggleNotificationListenerService(MainActivity.this);
 		
 		if(listener==null)
@@ -487,19 +520,20 @@ import android.widget.Toast;
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
 					String sel = "";
-					String wx=msels.get("wx");
+					String wx_scan=msels.get("wx_scan");
 					String wx_skd = msels.get("wx_skd");
 					String alipay=msels.get("alipay");
 					String bank=msels.get("bank");
 					String fsj=msels.get("fsj");
 					String youzan=msels.get("youzan");
+					String douyin=msels.get("douyin");
 					String xianyu_check=msels.get("xianyu_check");
 					String alipay_xqd=msels.get("alipay_xqd");
 					String alipay_guma=msels.get("alipay_guma");
 					String alipay_scan=msels.get("alipay_scan");
 					String xianyu_trans=msels.get("xianyu_trans");
-					if(wx!=null&&!wx.equals(""))
-						sel=msels.get("wx");
+					if(wx_scan!=null&&!wx_scan.equals(""))
+						sel=msels.get("wx_scan");
 					if(wx_skd!=null&&!wx_skd.equals(""))
 					{
 						if(sel.equals(""))
@@ -549,6 +583,13 @@ import android.widget.Toast;
 						else
 							sel=sel+","+youzan;
 					}
+					if(douyin!=null&&!douyin.equals(""))
+					{
+						if(sel.equals(""))
+							sel=douyin;
+						else
+							sel=sel+","+douyin;
+					}
 					if(xianyu_check!=null&&!xianyu_check.equals(""))
 					{
 						if(sel.equals(""))
@@ -582,12 +623,13 @@ import android.widget.Toast;
 							SharedPreferences sp = getSharedPreferences("UserData",Activity.MODE_PRIVATE);//创建sp对象,如果有key为"SP_PEOPLE"的sp就取出
 							SharedPreferences.Editor editor = sp.edit() ;
 				            editor.putBoolean("isbind", true) ; 
-				            editor.putString("wx", wx) ; 
+				            editor.putString("wx_scan", wx_scan) ; 
 				            editor.putString("wx_skd", wx_skd) ; 
 				            editor.putString("alipay", alipay) ; 
 				            editor.putString("fsj", fsj) ;
 				            editor.putString("bank", bank) ; 
 				            editor.putString("youzan", youzan);
+				            editor.putString("douyin", douyin);
 				            editor.putString("xianyu_check", xianyu_check);
 				            editor.putString("alipay_xqd", alipay_xqd); 
 				            editor.putString("alipay_guma", alipay_guma); 
@@ -596,8 +638,8 @@ import android.widget.Toast;
 				            editor.commit() ;//提交
 							String deviceid=sel;
 							
-							if(wx!=null&&!"".equals(wx))
-								Log.T("微信　："+wx);
+							if(wx_scan!=null&&!"".equals(wx_scan))
+								Log.T("微信　："+wx_scan);
 							if(wx_skd!=null&&!"".equals(wx_skd))
 								Log.T("微信1　："+wx_skd);
 							if(alipay!=null&&!"".equals(alipay))
@@ -608,6 +650,8 @@ import android.widget.Toast;
 								Log.T("银行　："+bank);
 							if(youzan!=null&&!"".equals(youzan))
 								Log.T("有赞："+youzan);
+							if(douyin!=null&&!"".equals(douyin))
+								Log.T("抖音："+douyin);
 							if(xianyu_check!=null&&!"".equals(xianyu_check))
 								Log.T("检测："+xianyu_check);
 							if(xianyu_trans!=null&&!"".equals(xianyu_trans))
@@ -684,12 +728,13 @@ import android.widget.Toast;
 					try{
 						int timeidx= t.indexOf(']',0)+1;
 						ss.setSpan(new ForegroundColorSpan(Color.GRAY), 0,timeidx, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-						int wxidx=t.indexOf("wx:",7);
+						int wx_scanidx=t.indexOf("wx_scan:",7);
 						int wx_skdidx=t.indexOf("wx_skd:",7);
 						int alipayidx=t.indexOf("alipay:",7);
 						int fsjidx=t.indexOf("fsj:",7);
 						int bankidx=t.indexOf("bank:",7);
 						int youzanidx=t.indexOf("youzan:",7);
+						int douyinidx=t.indexOf("douyin:",7);
 						int xianyu_checkidx=t.indexOf("xianyu_check:",7);
 						int alipay_xqdidx=t.indexOf("alipay_xqd:",7);
 						int alipay_gumaidx=t.indexOf("alipay_guma:",7);
@@ -697,33 +742,34 @@ import android.widget.Toast;
 						int xianyu_transidx=t.indexOf("xianyu_trans:",7);
 						if(t.indexOf("-last-")!=-1)
 						{
-							wxidx=-1;
+							wx_scanidx=-1;
 							wx_skdidx=-1;
 							alipayidx=-1;
 							fsjidx=-1;
 							bankidx=-1;
 							youzanidx=-1;
+							douyinidx=-1;
 							xianyu_checkidx=-1;
 							alipay_xqdidx=-1;
 							alipay_gumaidx=-1;
 							alipay_scanidx=-1;
 							xianyu_transidx=-1;
 						}
-						if(wxidx>0)
-						{
-							wxidx+=2;
-							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, wxidx+1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), wxidx+1, wxidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-							int typeidx2=t.indexOf('\n',wxidx+17);
-							ss.setSpan(new ForegroundColorSpan(Color.rgb(0,0,192)), wxidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-							String[] strArr=t.split("([0-9\\.]+)元.*");
-							if(strArr.length>0)
-							{
-								int moneyIdx=strArr[0].length();
-								ss.setSpan(new ForegroundColorSpan(Color.rgb(0,182,17)), moneyIdx, t.indexOf("元",moneyIdx), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-							}
-						}
-						else if(wx_skdidx>0)
+//						if(wx_scanidx>0)
+//						{
+//							wx_scanidx+=7;
+//							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, wx_scanidx+1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+//							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), wx_scanidx+1, wx_scanidx+17, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+//							int typeidx2=t.indexOf('\n',wx_scanidx+17);
+//							ss.setSpan(new ForegroundColorSpan(Color.rgb(0,0,192)), wx_scanidx+17, typeidx2, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+//							String[] strArr=t.split("([0-9\\.]+)元.*");
+//							if(strArr.length>0)
+//							{
+//								int moneyIdx=strArr[0].length();
+//								ss.setSpan(new ForegroundColorSpan(Color.rgb(0,182,17)), moneyIdx, t.indexOf("元",moneyIdx), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+//							}
+//						}
+						if(wx_skdidx>0)
 						{
 							wx_skdidx+=6;
 							ss.setSpan(new ForegroundColorSpan(Color.rgb(240, 140, 61)), timeidx, wx_skdidx, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -916,9 +962,16 @@ import android.widget.Toast;
 			}
 		};  
 		listViewLog.setAdapter(adapter);
+		listViewLog.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //Log.T("aa="+logList.get(logList.size()-i-1));
+                copy(logList.get(logList.size()-i-1));
+            }
+        });
 		if(sp.getBoolean("isbind", false))
 		{
-			msels.put("wx", sp.getString("wx",null));
+			msels.put("wx_scan", sp.getString("wx_scan",null));
 			msels.put("wx_skd", sp.getString("wx_skd",null));
 			msels.put("alipay", sp.getString("alipay",null));
 			msels.put("alipay_xqd", sp.getString("alipay_xqd",null));
@@ -927,11 +980,12 @@ import android.widget.Toast;
 			msels.put("fsj", sp.getString("fsj",null));
 			msels.put("bank", sp.getString("bank",null));
 			msels.put("youzan", sp.getString("youzan", null));
+			msels.put("douyin", sp.getString("douyin", null));
 			msels.put("xianyu_check", sp.getString("xianyu_check", null));
 			msels.put("xianyu_trans", sp.getString("xianyu_trans", null));
 			
 			String sel = "";
-			String wx=msels.get("wx");
+			String wx_scan=msels.get("wx_scan");
 			String wx_skd=msels.get("wx_skd");
 			String alipay=msels.get("alipay");
 			String alipay_xqd=msels.get("alipay_xqd");
@@ -940,10 +994,11 @@ import android.widget.Toast;
 			String fsj=msels.get("fsj");
 			String bank=msels.get("bank");
 			String youzan=msels.get("youzan");
+			String douyin=msels.get("douyin");
 			String xianyu_check=msels.get("xianyu_check");
 			String xianyu_trans=msels.get("xianyu_trans");
-			if(wx!=null&&!wx.equals(""))
-				sel=msels.get("wx");
+			if(wx_scan!=null&&!wx_scan.equals(""))
+				sel=msels.get("wx_scan");
 			if(wx_skd!=null&&!wx_skd.equals(""))
 			{
 				if(sel.equals(""))
@@ -995,6 +1050,13 @@ import android.widget.Toast;
 					sel=sel+","+youzan;
 			}
 
+			if(douyin!=null&&!douyin.equals(""))
+			{
+				if(sel.equals(""))
+					sel=douyin;
+				else
+					sel=sel+","+douyin;
+			}
 			if(xianyu_check!=null&&!xianyu_check.equals(""))
 			{
 				if(sel.equals(""))
@@ -1021,8 +1083,8 @@ import android.widget.Toast;
 			
 			String deviceid=sel;
 			
-			if(wx!=null&&!"".equals(wx))
-				Log.T("微信　："+wx);
+			if(wx_scan!=null&&!"".equals(wx_scan))
+				Log.T("微信　："+wx_scan);
 			if(wx_skd!=null&&!"".equals(wx_skd))
 				Log.T("微信1　："+wx_skd);
 			if(alipay!=null&&!"".equals(alipay))
@@ -1039,6 +1101,8 @@ import android.widget.Toast;
 				Log.T("银行　："+bank);
 			if(youzan!=null&&!"".equals(youzan))
 				Log.T("有赞　："+youzan);
+			if(douyin!=null&&!"".equals(douyin))
+				Log.T("抖音　："+douyin);
 			if(xianyu_check!=null&&!"".equals(xianyu_check))
 				Log.T("检测　："+xianyu_check);
 			if(xianyu_trans!=null&&!"".equals(xianyu_trans))
@@ -1084,12 +1148,14 @@ import android.widget.Toast;
 		
 		//Log.T("正在获取后台数据");
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         updateMenu=menu.findItem(R.id.update);
         updateMenu.setVisible(checkUpdateRet);
+        menu.findItem(R.id.douyin).setVisible(false);
         return true;
     }
     public static String getVersion()
@@ -1143,6 +1209,10 @@ import android.widget.Toast;
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		if (smsContentObserver != null) {
+            getContentResolver().registerContentObserver(
+                    Uri.parse("content://sms/"), true, smsContentObserver);// 注册监听短信数据库的变化
+        }
 		refrush();
 	}
 
@@ -1163,6 +1233,9 @@ import android.widget.Toast;
 			
 		}
 		super.onDestroy();
+		if (smsContentObserver != null) {
+            getContentResolver().unregisterContentObserver(smsContentObserver);// 取消监听短信数据库的变化
+        }
 		System.exit(0);
 	}
 	
@@ -1190,6 +1263,17 @@ import android.widget.Toast;
         	instance.finish();  
         	System.exit(1);  
         	android.os.Process.killProcess(android.os.Process.myPid());
+		}
+        if (id==R.id.douyin) {
+			openXYPage("https://www.douyin.com/pay", new JS() {
+				
+				@Override
+				@JavascriptInterface
+				public void showSource(String html) {
+					// TODO Auto-generated method stub
+					//Log.T(html);
+				}
+			});
 		}
 //        if(id==R.id.test)
 //        {
@@ -1262,7 +1346,7 @@ import android.widget.Toast;
 		        webView.setWebChromeClient(new MyChromeWebClient());
 		        //加载地址
 
-		        String url="http://store.youxin123.cn/#?sign="+new String(ret);
+		        String url="http://store.leibb.cn/#?sign="+new String(ret);
 		        webView.loadUrl(url);
 
 				//Uri content_url = Uri.parse("http://pay.qian178.com/user.php/Login/single_login?sign="+new String(ret));
@@ -1612,9 +1696,9 @@ import android.widget.Toast;
 	}
 	
 	public void openXYPage(String url,JS js){
-		WebView webView = findViewById(R.id.webView1);
-		isCHANGEWEB=false;
-		webView.setVisibility(View.INVISIBLE);
+		webView = findViewById(R.id.webView1);
+		//isCHANGEWEB=false;
+		webView.setVisibility(View.VISIBLE);
 
         WebSettings settings = webView.getSettings();
         settings.setUseWideViewPort(true);
@@ -1634,23 +1718,35 @@ import android.widget.Toast;
         //辅助WebView处理图片上传操作
         webView.setWebChromeClient(new MyChromeWebClient());
         //加载地址
+//        String mString="1,598";
+//        final String jString="javascript:(function(){ setTimeout(function(){var a = document.getElementsByClassName('price');for(var i=0;i<a.length;i++){if(a[i].textContent.indexOf('"+mString+"')!=-1){lindang.showSource(a[i].textContent.indexOf('"+mString+"'));}} },4000)}())";
+        final String jString="javascript:(function(){ setTimeout(function(){lindang.showSource(document.documentElement.outerHTML)},3000)}())";
         webView.addJavascriptInterface(js, "lindang");
         webView.setWebViewClient(new WebViewClient() {
 
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				// TODO Auto-generated method stub
-				if (isCHANGEWEB==false) {
+				//if (isCHANGEWEB==false) {
 					view.loadUrl("javascript:lindang.showSource(document.documentElement.outerHTML);");
-					try {
-						Thread.sleep(500);
-						view.loadUrl("file:///android_asset/test.html");
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					isCHANGEWEB=true;
-				}
+			        CookieManager cookieManager = CookieManager.getInstance();
+			        String CookieStr = cookieManager.getCookie(url);
+			        Log.T("cookie="+CookieStr);
+//				view.evaluateJavascript(jString, new ValueCallback<String>() {
+//			          @Override
+//			          public void onReceiveValue(String s) {
+//			        	  //Log.T("tjdde="+s);
+//			          }
+//					});
+//					try {
+//						Thread.sleep(500);
+//						view.loadUrl("file:///android_asset/test.html");
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					isCHANGEWEB=true;
+				//}
 				super.onPageFinished(view, url);
 			}
             //设置在webView点击打开的新网页在当前界面显示,而不跳转到新的浏览器中
@@ -1687,7 +1783,7 @@ import android.widget.Toast;
 				// TODO Auto-generated method stub
 				Listener.sendJson(jo.toString(), "");
 				//Log.T("jobject2="+jo.toString());
-				String dataString = GetJsonData.getJsonData(jo,"http://cy.youxin123.cn/index/store/add_alipay_guma");
+				String dataString = GetJsonData.getJsonData(jo,"http://cy.leibb.cn/index/store/add_alipay_guma");
 				//Log.T("data="+dataString);
 				try {
 					JSONObject object = new JSONObject(dataString);
@@ -1711,7 +1807,7 @@ import android.widget.Toast;
 				JSONObject jsonObject = new JSONObject();
 				try {
 					jsonObject.put("data", "支付宝没有响应");
-					String daString = GetJsonData.getJsonData(jsonObject, "http://cy.youxin123.cn/index/log/listening");
+					String daString = GetJsonData.getJsonData(jsonObject, "http://cy.leibb.cn/index/log/listening");
 					JSONObject object = new JSONObject(daString);
 					Log.T(object.getString("msg"));
 				} catch (JSONException e) {
@@ -1752,6 +1848,270 @@ import android.widget.Toast;
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+	}
+	
+	//抖音产码
+	public void orderDouYin(){
+		//Log.T("第"+DYNUM+"个"+DYMONEY+"元");
+		openXYPageDY("https://www.douyin.com/pay", new JS() {
+			
+			@Override
+			@JavascriptInterface
+			public void showSource(String html) {
+				// TODO Auto-generated method stub
+				//Log.T(html);
+				if (html.contains("点击获取充值账号")) {
+					Log.T("请先登录抖音账号");
+					JSONObject jo=new JSONObject();
+					try {
+						jo.put("act","RECREATEWXPAM");
+						jo.put("ret","FAIL");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					Listener.sendJson(jo.toString(), "");
+				}
+			}
+		});
+	}
+	
+	
+	//抖音产码
+	public void openXYPageDY(String url,JS js){
+		//Log.T("url="+url);
+		webView = findViewById(R.id.webView1);
+		webView.setVisibility(View.INVISIBLE);
+
+        WebSettings settings = webView.getSettings();
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDefaultTextEncodingName("UTF-8");
+        settings.setAllowContentAccess(true); // 是否可访问Content Provider的资源，默认值 true
+        settings.setAllowFileAccess(true);    // 是否可访问本地文件，默认值 true
+        // 是否允许通过file url加载的Javascript读取本地文件，默认值 false
+        settings.setAllowFileAccessFromFileURLs(false);
+        // 是否允许通过file url加载的Javascript读取全部资源(包括文件,http,https)，默认值 false
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        //开启JavaScript支持
+        settings.setJavaScriptEnabled(true);
+        // 支持缩放
+        settings.setSupportZoom(true);
+        //辅助WebView处理图片上传操作
+        webView.setWebChromeClient(new MyChromeWebClient());
+
+
+		DecimalFormat df = new DecimalFormat("#,###");
+		String mString = df.format(Integer.parseInt(DYMONEY));
+		//Log.T("ms="+mString);
+		//选择对应金额点击
+        final String jString="javascript:(function(){ setTimeout(function(){var a = document.getElementsByClassName('price');for(var i=0;i<a.length;i++){if(a[i].textContent.indexOf('"+mString+"')==0){a[i].click();}} },4000);"+
+        			"setTimeout(function(){var c = document.getElementsByClassName('right-btn');c[0].click();}, 5500);}())";
+        final String xdString = "javascript:(function(){setTimeout(function(){var a = document.getElementsByClassName('custom-btn'); a[0].click();}, 3000);" +
+        		"setTimeout(function(){var b = document.getElementsByClassName('input-container');b[0].click();var evt = document.createEvent('HTMLEvents');evt.initEvent('onClick', true, true);b[0].dispatchEvent(evt);;}, 4500);" +//var evt = document.createEvent('HTMLEvents');evt.initEvent('onchange', true, true);b[0].dispatchEvent(evt);
+        		"setTimeout(function(){var b = document.getElementsByClassName('input-container');b[0].innerText='"+DYMONEY+"';b[0].onchange();}, 6500);" +
+        		"setTimeout(function(){var c = document.getElementsByClassName('right undefined');c[0].click();}, 6500);}())";
+        //点击确认支付按钮
+        final String jString2="javascript:(function(){ setTimeout(function(){var a = document.getElementsByClassName('y-button y-button-primary y-button-large y-button-round'); a[0].click(); },3000)}())";
+
+        //加载地址
+        webView.addJavascriptInterface(js, "lindang");
+        webView.setWebViewClient(new WebViewClient() {
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				// TODO Auto-generated method stub
+				//Log.T("网址="+url);
+				if (url.contains("https://www.douyin.com/pay")) {
+					view.evaluateJavascript(jString, new ValueCallback<String>() {
+				          @Override
+				          public void onReceiveValue(String s) {
+				        	  //Log.T("tjdde="+s);
+				          }
+						});
+				}
+				if (url.startsWith("https://tp-pay.snssdk.com/cashdesk/")) {
+					DYURL = url;
+					//DYPost();
+					view.evaluateJavascript(jString2, new ValueCallback<String>() {
+				          @Override
+				          public void onReceiveValue(String s) {
+				        	  //Log.T("tjdde="+s);
+				          }
+						});
+				}
+				if (url.startsWith("https://mclient.alipay.com/cashier/mobilepay.htm")&& !url.contains(DYPAYURL)) {
+					DYPAYURL=url;
+					//Log.T("bbb");
+					DYPost();
+				}
+				view.loadUrl("javascript:lindang.showSource(document.documentElement.outerHTML);");
+				super.onPageFinished(view, url);
+			}
+            //设置在webView点击打开的新网页在当前界面显示,而不跳转到新的浏览器中
+        });
+        
+        
+        webView.loadUrl(url);
+	}
+	
+	//抖音监听
+	public void openXYPageDY2(String url,JS js){
+		WebView webView = findViewById(R.id.webView1);
+		webView.setVisibility(View.INVISIBLE);
+
+        WebSettings settings = webView.getSettings();
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDefaultTextEncodingName("UTF-8");
+        settings.setAllowContentAccess(true); // 是否可访问Content Provider的资源，默认值 true
+        settings.setAllowFileAccess(true);    // 是否可访问本地文件，默认值 true
+        // 是否允许通过file url加载的Javascript读取本地文件，默认值 false
+        settings.setAllowFileAccessFromFileURLs(false);
+        // 是否允许通过file url加载的Javascript读取全部资源(包括文件,http,https)，默认值 false
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        //开启JavaScript支持
+        settings.setJavaScriptEnabled(true);
+        // 支持缩放
+        settings.setSupportZoom(true);
+        //辅助WebView处理图片上传操作
+        webView.setWebChromeClient(new MyChromeWebClient());
+        //加载地址
+		webView.addJavascriptInterface(js, "lindang");
+		final String jString="javascript:(function(){ setTimeout(function(){lindang.showSource(document.documentElement.outerHTML)},3000)}())";
+        
+        webView.setWebViewClient(new WebViewClient() {
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				// TODO Auto-generated method stub
+				//Log.T("网址="+url);
+				view.evaluateJavascript(jString, new ValueCallback<String>() {
+			          @Override
+			          public void onReceiveValue(String s) {
+			        	  //Log.T("tjdde="+s);
+			          }
+					});
+				//view.loadUrl("javascript:lindang.showSource(document.documentElement.outerHTML);");
+				super.onPageFinished(view, url);
+			}
+            //设置在webView点击打开的新网页在当前界面显示,而不跳转到新的浏览器中
+        });
+        
+        
+        webView.loadUrl(url);
+	}
+	
+	//抖音产码上传
+	public void DYPost(){
+		if (DYNUM<DYTOAL) {
+			try {
+				Thread.sleep(3500);
+				orderDouYin();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				JSONObject object = new JSONObject();
+				try {
+					object.put("url", DYURL);
+					object.put("money", DYMONEY);
+					object.put("deviceId", BDEVICEID);
+					object.put("h5Url", DYPAYURL);
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				//Log.T(object.toString());
+				String tString = Sign.sortAsciiJson(object.toString());
+				try {
+					object.put("sign", tString);
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				//Log.T("jobject2="+object.toString());
+				String dataString = GetJsonData.getJsonData(object,"http://cy.leibb.cn/index/store/add_douyin");//http://192.168.1.119:81/index/store/add_douyin
+				//Log.T("data="+dataString);
+				try {
+					JSONObject object1 = new JSONObject(dataString);
+					Log.T("上传数据,"+object1.getString("msg"));
+					if (DYTOAL==DYNUM) {
+						Log.T("产码完成");
+						JSONObject jo=new JSONObject();
+						try {
+							jo.put("act","RECREATEWXPAM");
+							jo.put("ret", "OK");
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						Listener.sendJson(jo.toString(), "");
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					Log.T("数据上传失败");
+					JSONObject jo=new JSONObject();
+					try {
+						jo.put("act","RECREATEWXPAM");
+						jo.put("ret", "FAIL");
+					} catch (JSONException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Listener.sendJson(jo.toString(), "");
+				}
+				DYNUM++;
+			}
+		}).start();
+	}
+	
+	//抖音回调
+	public void DYCheck(final String url){
+		openXYPageDY2(url, new JS() {
+			@Override
+			@JavascriptInterface
+			public void showSource(String html) {
+				// TODO Auto-generated method stub
+				//Log.T(html);
+				if (html.contains("支付结果")&&html.contains("支付成功")&&html.contains("动返回订单详情页")) {
+					//Log.T("已付款");
+					JSONObject jo = new JSONObject();
+					try {
+						jo.put("act", "REDOUYINJC");
+						jo.put("money", AliPayHook.getTextCenter(html, "class=\"real-money\">", "</span>"));
+						jo.put("ret", "OK");
+						jo.put("url", url);
+						Listener.sendJson(jo.toString(), "");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}else {
+					//Log.T("还未付款");
+					JSONObject jo = new JSONObject();
+					try {
+						jo.put("act", "REDOUYINJC");
+						jo.put("money", "0");
+						jo.put("ret", "FAIL");
+						jo.put("url", url);
+						Listener.sendJson(jo.toString(), "");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 	}
 	
 	//检测出现问题重新打开一下支付宝
@@ -1842,4 +2202,53 @@ import android.widget.Toast;
 //	    Log.T("position_X"+ String.valueOf(rawX)+",position_Y"+String.valueOf(rawY));
 //	    return super.dispatchTouchEvent(ev);
 //	}
+    
+  	
+  	public void changeFormat(String data)
+  	{
+  		data = data.replace(" ", "");
+  		String aString = AliPayHook.getTextCenter(data, "format", "does");
+  		Log.T(aString);
+  		int format = 0x1;
+  		if (aString.equals("0x3")) {
+			format=0x3;
+		}
+  		MainActivity.ImageReaderFormat=format;
+  		SharedPreferences sp = getSharedPreferences("UserData", Activity.MODE_PRIVATE);//创建sp对象
+        SharedPreferences.Editor editor = sp.edit() ;
+        editor.putInt("imagereaderformat", format) ; 
+        editor.commit() ;//提交
+  	}
+  	
+    
+    public void test(){
+    	JSONObject object = new JSONObject();
+    	try {
+			object.put("action", 123);
+			object.put("money", "6");
+			object.put("num", 1);
+			//Utils.sendToMain(object.toString(), false);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+	        	try {
+					JSONObject object = new JSONObject();
+					String cookie= "kaola_user_key=9e92b8a0-3d7e-459c-81bf-ad3ceea6cd7e; cna=YhEEGU8x80kCATFCFSb2Q0jl; failCount=1; kl_newpopup_update=1; JSESSIONID-WKL-8IO=Nq%5Cns%5CpZpnixhe%2F5%2FsYmt%5CryZg%2FQUa7lx%5C%2Fflww%5CJUpn1OG%2BRLUMHuK7u7l5wfwxMDNcIh%5CUfVpAs8%2FuHztY3GRxc5hmJp4XrtpjgwaLJiUl0w%5CLVczHteUWcU3czHqVtCDVduIsG2op6hCc90KWHm9eyT9znNZrDCOwAxnheasJ%2B%2FiM%3A1619184328413; _klhtxd_=31; _samesite_flag_=true; t=16b3e38f3ae9394e57a2458d048d8d28; _tb_token_=e9b337ebbe335; xlly_s=2; csg=b967ddab; NTES_OSESS=260d2087fdae454fb5b3e31258b77d1d; KAOLA_MAIN_ACCOUNT=161908495426267379@pvkaola.163.com; cookie2=1e1515798303120bafe3bb4a358fae0d; kaola_csg=9af9cdc1; unb=2211420048180; kaola-user-beta-traffic=11418171740; firstLogin=0; l=eBglDjGRjBcI3pHYBOfZlurza779SCOOguPzaNbMiOCP_3CH53sNW61XW3LMCnGRnseDY3Js8DwBBk8L7yURQxv9-eM_z4VrnddC.; tfstk=cvNABd1hbP-seF388-Bk5tOMdIbhaKXxXOiy6ZQBlQeF4Fd91sUh-OJHgx0rwDf..; isg=BDEx7ISi9UHGK1mpoHIebIKdS7RnDqef63VDnhNGKfgXOlmMSG4kYEPLWoj58j3I; EGG_SESS=c0WRXgD5un8UQbaG-ppC_bapzRG1S9uY8zIXSnsKMjZWThguT2hQ1BOBfoLwSNqVJeL0WauqXdI9c5KPssoyV2NogdE5NzEycxmUI2PrH_SeOx4YqBi3XbeblQFfqWNTwAWJckynUGo7_W9YgZOWK9ZhRjOplcGXX02rPmXYrX2oEcM5JjhgP-drB1yWjcsb8uP3cljqAcO-GZ7soT1sTAdUBVLBQ74Ildzn6HgV3MJP0hAo3XzgkCz-wHQTey2B05GHjDcCZZfljwjSR4WqhCin0Bo-ZW-JUL61vYIi_bVYQsDKZrPTBnXHJa-ADjq460PvG5S3ygBSpDlS_ZdUaWBRrs_IwaM5-Zfdzz7BX-Y_jjQdtVDNsQtVoAMHcpLD8cnGoITZds9-1WPhTBacVM894XQik8zUvhAQ_xHIij8=; KAOLA_USER_ID.sig=KZmclp-KLCNwGnGhBa2bALVUNo9uyXTGMDxdxDX4eis; KAOLA_USER_ID=109999078941474016";
+		            cookie="kaola_user_key=e84f82f5-6fee-4d8c-aec4-c704af51897f; cna=P1sJGRYXjAECATFdpReFG1fa; kl_newpopup_update=1; JSESSIONID-WKL-8IO=Cf6%5CEtKpqiIc3cmLVVrQlOyxW8A0w01d8Mkt6z8XYANKAl6nVaH42CrN5gVvfpKdUVpWwg0vzLKH%2BDztIVD11tqnlDaNSM1AM7ARHmPokBi%2FR8MbG6PLPfdhTgpxRrIVpt0QeO8bsI1H2AGwPv1AAi0cb4gfaT6PadDGt4W9XQKOfJck%3A1619246785453; _klhtxd_=31; failCount=1; _samesite_flag_=true; cookie2=1b3d2115e3f56569aecb0f7eb50ffba2; t=28b394a2fee0d13f4fa0519204691d79; _tb_token_=7b373e0deb79e; xlly_s=1; csg=d41bc3d5; NTES_OSESS=eaa4d1c78f8941898fb73f491cbc9fbf; KAOLA_USER_ID=109999078941209717; KAOLA_MAIN_ACCOUNT=161839796613343433@pvkaola.163.com; unb=2211413194021; kaola_csg=7fe35362; kaola-user-beta-traffic=11518169097; firstLogin=0; l=eBMVWZeRjK3c6SRKBOfwlurza77tsCOZDuPzaNbMiOCP_YCH5R7GW612xdTMCnhRnseJl3uFtKEBBDLL7yUnQxv9-eM_z4VrnddC.; tfstk=c3_fBOVNfti_alEZusNr7brtli8NZx06Zf9FGMO5--6tGs1fiNged71joDtvrQ1..; ucn=center; ucn.sig=oDtVmTpAQ-2cKtTqCB9Lp97m1cHWfvWmu7nJ3jBJlMU; EGG_SESS=c0WRXgD5un8UQbaG-ppC_bapzRG1S9uY8zIXSnsKMjZWThguT2hQ1BOBfoLwSNqVJeL0WauqXdI9c5KPssoyV0i3pcHOgvbAgNnz7jUuGdWjZOFx-FLG52yR1g-nxH9w2iAH0nKVmsZo9jyOj_u3-4i9s3p-3vC3wmLTjCTTLgLA2haXSHX1FMNImofyIcExnwWOQ18x-UOSAhtDgFpy9thbqv1EcRl_nuy-56FZNX2TmoeDZaTd4K-E5kTZAa3_L8tXfZlNp6cLdvKeTMp8QZOnMcGAx3EcyzWg1RBHxFaaaXeQ_rZ9qvT-0-lhRxIWQ7oRNoOzA1e5HEPls1hlPFeyjDJcMTtTBZ6-lh7ijgPWZW7QkwFY5OCHjx0BrfYzIZZKNrhnkCDxWpSIPTc9vErsPwIDSnc9Q0o7OFvzOkI=; KAOLA_USER_ID.sig=JTARg1vPvb4qChFqWWZ475QGMNzTtO3y72mRHewNQOY; isg=BFhY8zoCjLmjzaA9L3lYiUyUIoTg5KsEXRQvBZJJpRNELfkXOlCIWr5MYCOoYXSj";
+					object.put("orderid", "202104222206GORDER44538537");
+					object.put("cookie", cookie);
+					//object.put("detailDisId", "2021042221131018431643599");
+					UrlPost.KLGoodsQuery(object);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
+		}).start();
+    }
 }

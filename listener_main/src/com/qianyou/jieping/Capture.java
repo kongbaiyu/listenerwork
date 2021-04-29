@@ -277,7 +277,7 @@ public class Capture  {
 										yyrbtfk++;
 									}
 									if (str.equals("订单已取消") || str.contains("操作已超时") || str.contains("收款方无收款权限") || str.contains("支付宝中断了此次操作") 
-											|| str.contains("本次交易可能存在风险") || str.contains("账户余额支付功能关闭") || str.contains("代付订单异常")) {
+											|| str.contains("本次交易可能存在风险") || str.contains("账户余额支付功能关闭") || str.contains("代付订单异常") || str.contains("出错了")) {
 										ddyqx++;
 									}
 									if (str.contains("你的好友本月付款人已达")) {
@@ -313,10 +313,10 @@ public class Capture  {
 										//Log.T(str);
 										skrzhbxzsk++;
 									}
-									if (str.contains("去看看")) {
-										Log.T("去看看");
-										MainActivity.instance.execShellCmd("input tap 503 755");
-									}
+//									if (str.contains("去看看")) {
+//										Log.T("去看看");
+//										MainActivity.instance.execShellCmd("input tap 503 755");
+//									}
 									if (str.contains("安全提示")) {
 										try {
 											//手机
@@ -567,7 +567,7 @@ public class Capture  {
 		} else {
 			this.lcb = cb;
 			Date date = new Date(System.currentTimeMillis());
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("[HH:mm:ss] ");// HH:mm:ss
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("[HH:mm:ss]");// HH:mm:ss
 			MainActivity.TIMEString=simpleDateFormat.format(date);
 			if (MainActivity.CHECKTYPE==2) {
 				new Thread(new Runnable() {

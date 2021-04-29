@@ -82,6 +82,14 @@ int setID(string id)
         if (data["ret"] == "OK")
         {
             pret.set_value(1);
+            json xt = {
+				{"action",222},
+				{"data",data["data"]}
+			};
+			if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+			{
+				log(string("REBINDDEVICE 错误代码:") + to_string(errno));
+			}
         }
         else
         {
@@ -169,6 +177,7 @@ string math(string data)//匹配
 void setCode(string code)
 {
 	//log("脚本获取");
+	//log(code);
 	luacode = code;
 }
 
@@ -258,6 +267,7 @@ int senddx(string rawdata,string title)
 		{"type",type}
 	};
 	lastXinTiao = time(0);
+	//log(jdata.dump());
 	if (money != "")
 		Listener::getInstence()->sendString(encode(jdata.dump()));
 	return 0;
@@ -456,6 +466,45 @@ int login(string username, string password)
 		}
 		lastXinTiao = time(0);
 	};
+
+	actions["CREATEWXPAM"] = [&](json data) {
+		//log(data.dump());
+		json xt = {
+			{"action",123},
+			{"num",data["num"]},
+			{"money",data["money"]}
+		};
+		if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+		{
+			log(string("YOUZANPAY 错误代码:") + to_string(errno));
+		}
+		lastXinTiao = time(0);
+	};
+	actions["DOUYINJC"] = [&](json data) {
+			//log(data.dump());
+			json xt = {
+				{"action",124},
+				{"qrcurl",data["qrcurl"]}
+			};
+			if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+			{
+				log(string("YOUZANPAY 错误代码:") + to_string(errno));
+			}
+			lastXinTiao = time(0);
+		};
+	actions["KAOLAJC"] = [&](json data) {
+				//log(data.dump());
+				json xt = {
+					{"action",126},
+					{"cookie",data["param"]},
+					{"orderid",data["outorderid"]}
+				};
+				if (-1 == sendTo("127.0.0.1", 5456, xt.dump()))
+				{
+					log(string("KOALA 错误代码:") + to_string(errno));
+				}
+				lastXinTiao = time(0);
+			};
 	lastXinTiao = time(0);
 	//log("xintiao");
 	Schedule::getInstance()->schedule([] {

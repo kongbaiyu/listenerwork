@@ -32,9 +32,9 @@ public class DoNotifications {
 			String str=time+"    "+title+"\n"+text;
 			//Log.T(str);
 			if (title.equals("微信收款商业版")) {
-				send("wx_skd:"+text,"wx_skd",title);
+				send("wx_scan:"+text,"wx_scan",title);
 			}else {
-				send("wx:"+str,"wx",title);
+				send("wx_scan:"+str,"wx_scan",title);
 			}
 		}
 		if(pkg.equals("com.eg.android.AlipayGphone"))
@@ -71,7 +71,7 @@ public class DoNotifications {
 		if(pkg.equals("com.android.mms"))
 		{
 			String str=time+"    "+title+"\n"+text;
-			//SLog.T(pkg+":"+time+"    "+title+"\n"+text);
+			//Log.T(str);
 			send("bank:"+str,"bank",title);
 		}
 		if(pkg.equals("com.qianyou.listener5"))

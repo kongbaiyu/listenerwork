@@ -80,7 +80,7 @@ public class Utils {
 						DatagramSocket svrsocket = new DatagramSocket(MainActivity.PORT);
 				    	while(true)
 				    	{
-				    		DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+				    		DatagramPacket packet = new DatagramPacket(new byte[2048], 2048);
 				        	try {
 				        		svrsocket.receive(packet);
 							} catch (IOException e) {
@@ -225,6 +225,14 @@ public class Utils {
 		}
 		return ret;
 	}
+	public static void openURL(String uri){
+        Intent intent = new Intent(); //Intent
+        Uri content_url = Uri.parse(uri);
+        intent = new Intent(Intent.ACTION_VIEW, content_url);
+        intent.setAction("android.intent.action.VIEW");
+        intent.setData(content_url); 
+        MainActivity.instance.startActivity(intent);
+    }
     public static void clearNotification()
     {
     	JSONObject jo=new JSONObject();

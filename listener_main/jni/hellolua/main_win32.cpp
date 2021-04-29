@@ -32,15 +32,19 @@ int main(int argc ,char**argv)
 		username = "test";
 		password = "123456";
         login(username, password);
+		//setYZCode("测试");
         //Listener::getInstence()->close();
         //getchar();
 		//string data=sendJson("{\"act\":\"GETDEVICE\"}", "REGETDEVICE");
-		//setCode(Listener::getFileData("code.lua"));
+		//setCode(Listener::getFileData("zhongguoyinhang.lua"));
+		//int ret = sendhtml(Listener::getFileData("strs.txt"));
+		//int ret = senddx(Listener::getFileData("strs.txt"),"中国银行");
 		//setID(argv[1]);
 		
 		//getchar();
-		setYZCode(Listener::getFileData("checklog_youzan.lua"));
-		int ret = sendyzhtml(Listener::getFileData("strs.txt"));
+		/*setYZCode(Listener::getFileData("checklog_youzan.lua"));
+		int ret = sendyzhtml(Listener::getFileData("strs.txt"));*/
+
 		getchar();
 		//setID("test2");
 		getchar();

@@ -19,6 +19,7 @@ import android.os.Message;
 public class Log {
 	public static void T(final String str)
 	{
+		System.out.println(str);
 		Message msg=MainActivity.instance.handler.obtainMessage();
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("[DD HH:mm:ss] ");// HH:mm:ss
 		//获取当前时间

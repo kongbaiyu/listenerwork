@@ -39,6 +39,7 @@ import com.qianyou.jieping.Utils;
 import com.qianyou.listener5.MainActivity.JS;
 import com.qianyou.nat.GetJsonData;
 import com.qianyou.nat.Listener;
+import com.qianyou.utils.UrlPost;
 
 public class NetDoActions {
 	MainActivity instance;
@@ -115,10 +116,10 @@ public class NetDoActions {
 									cb.setEnabled(false);
 								}
 								String qudao="";
-								if(type.equals("wx"))
+								if(type.equals("wx_scan"))
 								{
 									qudao="微信　：";
-									if(name.equals(instance.msels.get("wx")))
+									if(name.equals(instance.msels.get("wx_scan")))
 									{
 										cb.setChecked(true);
 									}
@@ -175,6 +176,14 @@ public class NetDoActions {
 								{
 									qudao="有赞：";
 									if(name.equals(instance.msels.get("youzan")))
+									{
+										cb.setChecked(true);
+									}
+								}
+								else if(type.equals("douyin"))
+								{
+									qudao="抖音：";
+									if(name.equals(instance.msels.get("douyin")))
 									{
 										cb.setChecked(true);
 									}
@@ -413,7 +422,7 @@ public class NetDoActions {
 			}
 			if(act==MainActivity.SEND && instance.isBand==true)
 			{
-				//Log.T(jobject.toString());
+//				Log.T(jobject.toString());
 				String data=jobject.getString("data");
 				String rid=jobject.getString("rid");
 				if(instance.senddatas.containsKey(rid)) //双重接收保证udp接收成功率
@@ -428,9 +437,9 @@ public class NetDoActions {
 					String title=jobject.getString("title");
 
 					boolean isapp=false;
-					if(type.equals("wx")&&title.equals("微信收款助手"))
+					if(type.equals("wx_scan")&&(title.equals("微信支付")||title.equals("微信收款助手")))
 					{
-						Log.T(data);
+						Log.T("微信收款"+AliPayHook.getTextCenter(data, "支付收款", "元")+"元");
 						JSONObject jo=new JSONObject();
 						jo.put("act", "CHONGZHI");
 						jo.put("raw", data);
@@ -440,7 +449,7 @@ public class NetDoActions {
 						//instance.listener.send(data);
 						isapp=true;
 					}
-					if(type.equals("wx_skd")&&title.equals("微信收款商业版"))
+					if(type.equals("wx_scan")&&title.equals("微信收款商业版"))
 					{
 						Log.T(data);
 						String pattern = "(\\d+)(\\.)(\\d+)";
@@ -496,13 +505,23 @@ public class NetDoActions {
 							isapp=true;
 						}
 					}
+//					Log.T(type+isapp);
 					if(isapp==false&&type.equals("bank"))
 					{
-						if(instance.listener.checkdx(data,title)==1)
-						{
-							Log.T(data);
-							instance.listener.senddx(data,title);
-						}
+						//Log.T(jobject.toString());
+//						if(!data.equals(MainActivity.BANKDATA)) //双重接收保证udp接收成功率
+//						{
+//							Log.T("check="+instance.listener.checkdx(data,title));
+//							if(instance.listener.checkdx(data,title)==1)
+//							{
+//								MainActivity.BANKDATA=data;
+//								Log.T(data);
+//								instance.listener.senddx(data,title);
+//							}else {
+//								instance.listener.sendJson(jobject.toString(), "");
+//							}
+//							
+//						}
 					}
 					if(title.equals("支付宝账号在其他设备登录")) //支付宝账号在其他设备登录
 					{
@@ -805,7 +824,82 @@ public class NetDoActions {
 			if (act==MainActivity.OPENCVMSG) {
 				Log.T(jobject.toString());
 			}
-			
+			//抖音产码
+			if (act==MainActivity.DOUYINPCODE) {
+				MainActivity.DYMONEY = jobject.getString("money");
+				int num = jobject.getInt("num");
+				MainActivity.DYTOAL = num;
+				MainActivity.DYNUM=1;
+				Log.T("开始产码,金额"+MainActivity.DYMONEY+"元"+num+"个");
+				MainActivity.instance.orderDouYin();
+			}
+			//抖音回调
+			if (act==MainActivity.DOUYINRESULT) {
+				String url = jobject.getString("qrcurl");
+				MainActivity.instance.DYCheck(url);
+			}
+			//获取deviceid
+			if (act==MainActivity.REBINDDEVICE) {
+				//Log.T(jobject.toString());
+				String deviedId = AliPayHook.getTextCenter(jobject.toString(), "deviceid\":", ",");
+				MainActivity.BDEVICEID = deviedId;
+			}
+			if (act==MainActivity.BANKRESULT) {
+				//Log.T(jobject.toString());
+				String data=jobject.getString("data");
+				String title=jobject.getString("title");
+				if(!data.equals(MainActivity.BANKDATA)) //双重接收保证udp接收成功率
+				{
+					//Log.T("check="+instance.listener.checkdx(data,title));
+					if(instance.listener.checkdx(data,title)==1)
+					{
+						MainActivity.BANKDATA=data;
+						Log.T(data);
+						instance.listener.senddx(data,title);
+					}else {
+						instance.listener.sendJson(jobject.toString(), "");
+					}
+					
+				}
+			}
+			if (act==MainActivity.KAOLAGOODQUERY) {
+				//Log.T(jobject.toString());
+				String orderid = jobject.getString("orderid");
+//				JSONObject jo=new JSONObject();
+//				try {
+//					jo.put("act","REKAOLAJC");
+//					jo.put("orderid",orderid);
+//					jo.put("cardNum", "123456789");
+//					jo.put("codeNum","987654321");
+//					jo.put("money", "9.1");
+//					jo.put("ret","OK");
+//				} catch (JSONException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				Log.T(jo.toString());
+//				Listener.sendJson(jo.toString(), "");
+				if (orderid.isEmpty()) {
+					Log.T("orderid为空");
+					JSONObject jo=new JSONObject();
+					try {
+						jo.put("act","REKAOLAJC");
+						jo.put("orderid",orderid);
+						jo.put("cardNum", "");
+						jo.put("codeNum","");
+						jo.put("money", "");
+						jo.put("ret","NA");
+						jo.put("raw","orderid为空");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					Log.T(jo.toString());
+					Listener.sendJson(jo.toString(), "");
+				}else {
+					UrlPost.KLGoodsQuery(jobject);
+				}
+			}
 			if(act==MainActivity.EXIT)
 			{
 				Log.T(jobject.toString());

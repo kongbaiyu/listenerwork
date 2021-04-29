@@ -13,8 +13,9 @@ function split(s, delim)
 end
 function mathdx(data,title)
 	local money
-	if tostring(title) ~= "95599" then return money end
-	if string.find(data,"【中国农业银行】") ~= 1 then return money end
+	if tostring(title) ~= "中国农业银行" then return money end
+	local chectt = split(data,"中国农业银行")
+	if #chectt ~= 3 then return money end
 	local check0 = split(data,"向您尾号")
 	if #check0~=2 then return money end
 	local check=split(check0[2],"账户完成转存交易人民币")
@@ -24,4 +25,5 @@ function mathdx(data,title)
 		money = string.match(check2[1],"[%d.]+")
 		return money
 	end
+	return money
 end

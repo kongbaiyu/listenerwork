@@ -371,8 +371,10 @@ public class Listener {
             return null;
         }
         //Log.T("qq="+ipAddressArr[0]);
-        return ipAddressArr[0];
-        //return "192.168.1.199";
+        //return ipAddressArr[0];
+        //return "192.168.1.106";
+        //return "159.138.132.57"; //23ee
+        return "119.8.51.214";  //xf
     }
 
 }
